@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'component/input_field.dart';
-import 'component/sign_in_button.dart';
+import 'package:project/signup_screen.dart';
+import '../component/input_field.dart';
+import '../component/auth_button.dart';
+import '../component/auth_header.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -25,25 +27,8 @@ class LoginScreen extends StatelessWidget {
           children: [
             Column(
               children: [
-                // Bagian atas: teks sambutan
-                const Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 32, top: 80),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Hello,\nWelcome Back!',
-                        style: TextStyle(
-                          fontSize: 35,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                // Header yang dipisah
+                const AuthHeader(title: 'Hello,\nWelcome Back!'),
 
                 // Bagian bawah: form login
                 Expanded(
@@ -96,11 +81,12 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // Tombol SIGN IN yang diambil dari komponen terpisah
-                          SignInButton(
-                            onPressed: () {
-                              print('Sign In Pressed');
-                              // TODO: Handle sign in logic
+                          // Tombol SIGN IN dari komponen terpisah
+                         AuthButton(
+                          label: 'Sign In',
+                          onPressed: () {
+                           print('Sign In Pressed');
+                            // TODO: tambahkan logika sign in
                             },
                           ),
                           const SizedBox(height: 60), // Spasi bawah
@@ -128,6 +114,10 @@ class LoginScreen extends StatelessWidget {
                     onPressed: () {
                       print('Sign Up Pressed');
                       // TODO: Navigate to Sign Up screen
+                       Navigator.push(
+                       context,
+                      MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                       );
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -152,3 +142,4 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
