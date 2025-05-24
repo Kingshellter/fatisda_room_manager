@@ -1,81 +1,104 @@
 // lib/component/booking_item.dart
 import 'package:flutter/material.dart';
-// Pastikan path import ini sesuai dengan struktur proyek Anda
-// Jika nama folder proyek Anda bukan 'project', sesuaikan 'project' dengan nama folder proyek Anda.
-// Contoh: import 'package:fatisda_booking_app/models/booking.dart';
-import '../models/booking.dart'; // Jika models berada satu level di atas component
+import '../models/booking.dart';
 
 class BookingItem extends StatelessWidget {
   final Booking booking;
-  final double hourHeight; // Tinggi untuk setiap jam pada timeline
+  final double hourHeight;
+  final double dayColumnWidth;
 
   const BookingItem({
     Key? key,
     required this.booking,
     required this.hourHeight,
+    required this.dayColumnWidth,
   }) : super(key: key);
+
+  // Helper untuk menghitung posisi Y berdasarkan waktu
+  double _calculateTimeOffset(String time) {
+    final parts = time.split('.');
+    final hour = int.parse(parts[0]);
+    final minute = int.parse(parts[1]);
+
+    // Waktu mulai timeline
+    const timelineStartHour = 7;
+    const timelineStartMinute = 30;
+
+    // Total menit dari awal hari
+    final timeTotalMinutes = hour * 60 + minute;
+    final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
+
+    // Perbedaan dalam menit dari awal timeline
+    final diffMinutes = timeTotalMinutes - timelineStartTotalMinutes;
+
+    // Konversi ke offset "jam"
+    return (diffMinutes / 60.0) * hourHeight;
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Menghitung tinggi berdasarkan durasi.
-    // Pastikan durationInHours menghasilkan nilai non-negatif.
-    double itemHeight = booking.durationInHours * hourHeight;
-    if (itemHeight < 0) {
-      itemHeight = 0; // Mencegah tinggi negatif
-    }
-
-    // Menghitung posisi top.
-    // Pastikan startOffset menghasilkan nilai yang wajar.
-    double itemTop = booking.startOffset * hourHeight;
+    // Hitung posisi dan tinggi item booking
+    final startOffset = _calculateTimeOffset(booking.startTime);
+    final endOffset = _calculateTimeOffset(booking.endTime);
+    final height = endOffset - startOffset;
 
     return Positioned(
-      top: itemTop,
-      // Lebar time ruler (70.0) + (kolom * lebar kolom (misal 100.0))
-      // Sesuaikan 100.0 jika lebar kolom hari Anda berbeda di main.dart
-      left: 70.0 + (booking.dayColumn * 100.0),
-      height: itemHeight,
-      width: 90.0, // Lebar item booking, bisa disesuaikan
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.only(right: 4.0, bottom: 2.0),
-        decoration: BoxDecoration(
-          color: booking.color,
-          borderRadius: BorderRadius.circular(8.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text(
-              booking.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+      top: startOffset,
+      left: booking.dayColumn * dayColumnWidth,
+      width: dayColumnWidth,
+      height: height,
+      child: Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: booking.color.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(4.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1, // Batasi judul agar tidak terlalu panjang
-            ),
-            const SizedBox(height: 2),
-            if (itemHeight > 30) // Hanya tampilkan waktu jika item cukup tinggi
-              Text(
-                '${booking.startTime} - ${booking.endTime}',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  booking.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-          ],
+                const SizedBox(height: 2),
+                Text(
+                  booking.room,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (height > 50) // Only show lecturer if there's enough space
+                  Text(
+                    booking.lecturer,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

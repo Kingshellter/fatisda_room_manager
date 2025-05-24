@@ -2,11 +2,21 @@
 import 'package:flutter/material.dart';
 
 class Booking {
-  final String title;
+  final String title; // Akan diisi dari 'Course' di form
   final String startTime; // Format HH.mm
   final String endTime;   // Format HH.mm
   final Color color;
-  final int dayColumn; // Kolom hari (0 untuk kolom pertama, 1 untuk kedua, dst.)
+  final int dayColumn; // Kolom hari (0 untuk kolom pertama, dst.)
+  final String room;    // Informasi ruangan
+
+  // Informasi tambahan dari form
+  final String studentName;
+  final String major;
+  final String classYear;
+  final String necessary; // Keperluan
+  final String notes;
+  final String lecturer;
+
 
   Booking({
     required this.title,
@@ -14,47 +24,62 @@ class Booking {
     required this.endTime,
     required this.color,
     required this.dayColumn,
+    required this.room,
+    required this.studentName,
+    required this.major,
+    required this.classYear,
+    required this.necessary,
+    this.notes = '', // Notes bisa opsional
+    required this.lecturer,
   });
+
+  // Helper untuk mengubah string "HH.mm" menjadi TimeOfDay
+  TimeOfDay _parseTime(String time) {
+    final parts = time.split('.');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
 
   // Helper untuk mendapatkan durasi dalam jam
   double get durationInHours {
     try {
-      final startHour = int.parse(startTime.split('.')[0]);
-      final startMinute = int.parse(startTime.split('.')[1]);
-      final endHour = int.parse(endTime.split('.')[0]);
-      final endMinute = int.parse(endTime.split('.')[1]);
+      final start = _parseTime(startTime);
+      final end = _parseTime(endTime);
 
-      final startTotalMinutes = startHour * 60 + startMinute;
-      final endTotalMinutes = endHour * 60 + endMinute;
+      final startTotalMinutes = start.hour * 60 + start.minute;
+      final endTotalMinutes = end.hour * 60 + end.minute;
 
       if (endTotalMinutes < startTotalMinutes) {
-        // Jika waktu selesai lebih awal dari waktu mulai (misal melewati tengah malam atau data salah)
-        // Untuk kasus sederhana ini, kita anggap durasinya 0 atau bisa juga throw error.
-        // Atau jika melewati tengah malam, (24*60 - startTotalMinutes) + endTotalMinutes
-        return 0.0; // Atau handle sesuai logika bisnis Anda
+        return 0.0;
       }
-
       return (endTotalMinutes - startTotalMinutes) / 60.0;
     } catch (e) {
-      // Handle parsing error, misalnya format waktu tidak sesuai
       print('Error parsing time for durationInHours: $e');
-      return 0.0; // Default duration jika ada error
+      return 0.0;
     }
   }
 
   // Helper untuk mendapatkan offset Y berdasarkan waktu mulai
+  // Jam mulai timeline kita adalah 07:30
   double get startOffset {
     try {
-      final startHour = int.parse(startTime.split('.')[0]);
-      final startMinute = int.parse(startTime.split('.')[1]);
-      // Asumsi timeline dimulai jam 09.00
-      // Jika startHour adalah 9, offset adalah (9-9) + min/60 = min/60
-      // Jika startHour adalah 10, offset adalah (10-9) + min/60 = 1 + min/60
-      return (startHour - 9.0) + (startMinute / 60.0);
+      final timelineStartHour = 7;
+      final timelineStartMinute = 30;
+
+      final bookingStart = _parseTime(startTime);
+
+      // Konversi waktu ke menit dari awal hari
+      final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
+      final bookingStartTotalMinutes = bookingStart.hour * 60 + bookingStart.minute;
+
+      // Offset dalam menit dari awal timeline
+      final offsetInMinutes = bookingStartTotalMinutes - timelineStartTotalMinutes;
+
+      // Konversi offset ke "jam" relatif terhadap hourHeight
+      return offsetInMinutes / 60.0;
+
     } catch (e) {
-      // Handle parsing error
       print('Error parsing time for startOffset: $e');
-      return 0.0; // Default offset jika ada error
+      return 0.0;
     }
   }
 }
