@@ -7,6 +7,8 @@ import 'component/new_booking_button.dart';
 import 'component/time_ruler.dart';
 import 'component/booking_form_dialog.dart';
 import 'models/booking.dart';
+import 'login_screen.dart';
+
 
 void main() {
   runApp(const FatisdaBookingApp());
@@ -190,8 +192,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   LoginButton(
-                    onPressed: () {
-                      print('Login pressed');
+                   onPressed: () {
+                      Navigator.push(
+                      context,
+                     MaterialPageRoute(builder: (context) => const LoginScreen()),
+                       );
                     },
                   ),
                   NewBookingButton(
