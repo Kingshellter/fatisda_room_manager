@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'signup_screen.dart';
-import '../component/input_field.dart';
-import '../component/auth_button.dart';
-import '../component/auth_header.dart';
+import 'component/input_field.dart';
+import 'component/auth_button.dart';
+import 'component/auth_header.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class SignUpScreen extends StatelessWidget {
+  const SignUpScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController = TextEditingController();
 
     return Scaffold(
       body: Container(
@@ -27,10 +28,7 @@ class LoginScreen extends StatelessWidget {
           children: [
             Column(
               children: [
-                // Header yang dipisah
-                const AuthHeader(title: 'Hallo,\nMahasiswa Fatisda!'),
-
-                // Bagian bawah: form login
+                const AuthHeader(title: 'Create\nNew Account'),
                 Expanded(
                   flex: 3,
                   child: Container(
@@ -57,6 +55,12 @@ class LoginScreen extends StatelessWidget {
                         children: [
                           const SizedBox(height: 24),
                           InputField(
+                            label: 'Full Name',
+                            controller: nameController,
+                            obscureText: false,
+                          ),
+                          const SizedBox(height: 16),
+                          InputField(
                             label: 'Email',
                             controller: emailController,
                             obscureText: false,
@@ -67,29 +71,21 @@ class LoginScreen extends StatelessWidget {
                             controller: passwordController,
                             obscureText: true,
                           ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                // TODO: Handle forgot password
-                              },
-                              child: const Text(
-                                'Forgot Password?',
-                                style: TextStyle(color: Colors.black87),
-                              ),
-                            ),
-                          ),
                           const SizedBox(height: 16),
-                          // Tombol SIGN IN dari komponen terpisah
-                         AuthButton(
-                          label: 'Sign In',
-                          onPressed: () {
-                           print('Sign In Pressed');
-                            // TODO: tambahkan logika sign in
+                          InputField(
+                            label: 'Confirm Password',
+                            controller: confirmPasswordController,
+                            obscureText: true,
+                          ),
+                          const SizedBox(height: 32),
+                          AuthButton(
+                            label: 'Sign Up',
+                            onPressed: () {
+                              print('Sign Up Pressed');
+                              // TODO: Implement sign up logic
                             },
                           ),
-                          const SizedBox(height: 60), // Spasi bawah
+                          const SizedBox(height: 60),
                         ],
                       ),
                     ),
@@ -97,27 +93,21 @@ class LoginScreen extends StatelessWidget {
                 ),
               ],
             ),
-
-            // Teks dan tombol Sign Up di kanan bawah
+            // Back button and Sign In text at the bottom
             Positioned(
-              right: 16,
+              left: 16,
               bottom: 16,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "Don't have account?",
+                    "Already have an account?",
                     style: TextStyle(color: Colors.black),
                   ),
                   TextButton(
                     onPressed: () {
-                      print('Sign Up Pressed');
-                      // TODO: Navigate to Sign Up screen
-                       Navigator.push(
-                       context,
-                      MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                       );
+                      Navigator.pop(context); // Go back to login screen
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -125,7 +115,7 @@ class LoginScreen extends StatelessWidget {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: const Text(
-                      'Sign Up',
+                      'Sign In',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         decoration: TextDecoration.underline,
@@ -141,5 +131,4 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-}
-
+} 

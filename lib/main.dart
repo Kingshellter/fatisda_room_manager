@@ -1,5 +1,6 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';  // Add this import for date formatting
 import 'component/date_header.dart';
 import 'component/booking_item.dart';
 import 'component/login_button.dart';
@@ -113,6 +114,8 @@ class _BookingScreenState extends State<BookingScreen> {
       totalCalendarHeight = (diffMinutes / 60.0) * _hourHeight + _hourHeight ; // Tambah buffer
     }
 
+    // Get current date formatted
+    final String currentDate = DateFormat('E, MMM d').format(DateTime.now());
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -120,7 +123,7 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Column(
           children: [
             DateHeader(
-              dateText: 'Mon, Aug 17', // Ini bisa dibuat dinamis nantinya
+              dateText: currentDate,
               onEditPressed: () {
                 print('Edit date pressed');
               },
