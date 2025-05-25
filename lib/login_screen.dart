@@ -79,7 +79,7 @@ class LoginScreen extends StatelessWidget {
                                );
                               },
                               child: const Text(
-                                'Forgot Password?',
+                                'Lupa Password?',
                                 style: TextStyle(color: Colors.black87),
                               ),
                             ),

@@ -28,7 +28,7 @@ class SignUpScreen extends StatelessWidget {
           children: [
             Column(
               children: [
-                const AuthHeader(title: 'Create\nNew Account'),
+                const AuthHeader(title: 'Buat\nAkun Baru'),
                 Expanded(
                   flex: 3,
                   child: Container(
@@ -102,7 +102,7 @@ class SignUpScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "Already have an account?",
+                    "Sudah Punya Akun?",
                     style: TextStyle(color: Colors.black),
                   ),
                   TextButton(

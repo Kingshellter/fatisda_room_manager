@@ -88,7 +88,6 @@ class _BookingScreenState extends State<BookingScreen> {
       builder: (BuildContext context) {
         return BookingFormDialog(
           onBookingConfirmed: _addBooking,
-          timeSlots: _timeSlots,
           rooms: _availableRooms,
         );
       },
@@ -128,11 +127,15 @@ class _BookingScreenState extends State<BookingScreen> {
                 print('Edit date pressed');
               },
             ),
+            Container(
+              height: 1,
+              color: Colors.grey[350],
+            ),
             Expanded(
               child: SingleChildScrollView( // Scroll vertikal untuk seluruh area kalender
                 child: SingleChildScrollView( // Scroll horizontal untuk kalender
                   scrollDirection: Axis.horizontal,
-                  child: SizedBox(
+                  child: Container(
                     // Lebar total kalender = lebar time ruler + (jumlah kolom * lebar kolom)
                     width: 60.0 + (_numberOfDayColumns * _dayColumnWidth),
                     height: totalCalendarHeight, // Tinggi berdasarkan slot waktu
