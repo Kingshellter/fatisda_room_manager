@@ -107,7 +107,7 @@ class LoginScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "Don't have account?",
+                    "belum punya akun?",
                     style: TextStyle(color: Colors.black),
                   ),
                   TextButton(
