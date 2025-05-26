@@ -26,6 +26,16 @@ class LoginScreen extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            // Back Button
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            
             Column(
               children: [
                 // Header yang dipisah
