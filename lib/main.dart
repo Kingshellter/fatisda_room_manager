@@ -82,6 +82,18 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  void _cancelBooking(Booking booking) {
+    setState(() {
+      _bookings.remove(booking);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Booking untuk ${booking.title} di ${booking.room} berhasil dibatalkan!'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   void _showBookingForm() {
     showDialog(
       context: context,
@@ -178,6 +190,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                       booking: booking,
                                       hourHeight: _hourHeight,
                                       dayColumnWidth: _dayColumnWidth,
+                                      onCancelBooking: _cancelBooking,
                                     );
                                   }
                                   return const SizedBox.shrink();
