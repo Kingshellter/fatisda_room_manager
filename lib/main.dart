@@ -1,6 +1,6 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';  // Add this import for date formatting
+import 'package:intl/intl.dart'; // Add this import for date formatting
 import 'component/date_header.dart';
 import 'component/booking_item.dart';
 import 'component/login_button.dart';
@@ -11,7 +11,6 @@ import 'models/booking.dart';
 import 'login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'services/auth_service.dart';
-
 
 void main() {
   runApp(const FatisdaBookingApp());
@@ -79,11 +78,17 @@ class _BookingScreenState extends State<BookingScreen> {
   ];
 
   // Daftar ruangan (contoh)
-  final List<String> _availableRooms = ['Ruang A101', 'Ruang B203', 'Lab Komputer 1', 'Aula Fatisda'];
+  final List<String> _availableRooms = [
+    'Ruang A101',
+    'Ruang B203',
+    'Lab Komputer 1',
+    'Aula Fatisda',
+  ];
 
-
-  final double _hourHeight = 100.0; // Tinggi representasi satu jam di UI (bisa disesuaikan)
-  final int _numberOfDayColumns = 5; // Jumlah kolom hari yang ingin ditampilkan (misal Senin-Jumat)
+  final double _hourHeight =
+      100.0; // Tinggi representasi satu jam di UI (bisa disesuaikan)
+  final int _numberOfDayColumns =
+      5; // Jumlah kolom hari yang ingin ditampilkan (misal Senin-Jumat)
   final double _dayColumnWidth = 150.0; // Lebar setiap kolom hari
 
   void _addBooking(Booking newBooking) {
@@ -92,7 +97,9 @@ class _BookingScreenState extends State<BookingScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Booking untuk ${newBooking.title} di ${newBooking.room} berhasil ditambahkan!'),
+        content: Text(
+          'Booking untuk ${newBooking.title} di ${newBooking.room} berhasil ditambahkan!',
+        ),
         backgroundColor: Colors.green,
       ),
     );
@@ -104,7 +111,9 @@ class _BookingScreenState extends State<BookingScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Booking untuk ${booking.title} di ${booking.room} berhasil dibatalkan!'),
+        content: Text(
+          'Booking untuk ${booking.title} di ${booking.room} berhasil dibatalkan!',
+        ),
         backgroundColor: Colors.red,
       ),
     );
@@ -117,7 +126,7 @@ class _BookingScreenState extends State<BookingScreen> {
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
-      
+
       // Check login status after returning from login screen
       _checkLoginStatus();
       return;
@@ -156,21 +165,26 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Hitung tinggi total untuk konten kalender agar bisa di-scroll
+    // Hitung tinggi total untuk konten kalender
     double totalCalendarHeight = 0;
     if (_timeSlots.isNotEmpty) {
+      // Konversi waktu awal dan akhir ke menit
+      final firstSlotStart = _timeSlots.first['start']!;
       final lastSlotEnd = _timeSlots.last['end']!;
-      final parts = lastSlotEnd.split('.');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
+      
+      final firstParts = firstSlotStart.split('.');
+      final lastParts = lastSlotEnd.split('.');
+      
+      final startHour = int.parse(firstParts[0]);
+      final startMinute = int.parse(firstParts[1]);
+      final endHour = int.parse(lastParts[0]);
+      final endMinute = int.parse(lastParts[1]);
 
-      const timelineStartHour = 7;
-      const timelineStartMinute = 30;
-
-      final slotEndTotalMinutes = hour * 60 + minute;
-      final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
-      final diffMinutes = slotEndTotalMinutes - timelineStartTotalMinutes;
-      totalCalendarHeight = (diffMinutes / 60.0) * _hourHeight + _hourHeight ; // Tambah buffer
+      final startTotalMinutes = startHour * 60 + startMinute;
+      final endTotalMinutes = endHour * 60 + endMinute;
+      
+      final diffMinutes = endTotalMinutes - startTotalMinutes;
+      totalCalendarHeight = (diffMinutes / 60.0) * _hourHeight + 60; // Tambah padding
     }
 
     // Get current date formatted
@@ -187,74 +201,81 @@ class _BookingScreenState extends State<BookingScreen> {
                 print('Edit date pressed');
               },
             ),
-            Container(
-              height: 1,
-              color: Colors.grey[350],
-            ),
+            Container(height: 0.5, color: Colors.grey[350]),
             Expanded(
-              child: SingleChildScrollView( // Scroll vertikal untuk seluruh area kalender
-                child: SingleChildScrollView( // Scroll horizontal untuk kalender
-                  scrollDirection: Axis.horizontal,
-                  child: Container(
-                    // Lebar total kalender = lebar time ruler + (jumlah kolom * lebar kolom)
-                    width: 60.0 + (_numberOfDayColumns * _dayColumnWidth),
-                    height: totalCalendarHeight, // Tinggi berdasarkan slot waktu
-                    child: Stack(
-                      children: [
-                        // Garis-garis vertikal untuk pemisah hari/kolom
-                        Row(
-                          children: [
-                            const SizedBox(width: 60), // Space untuk TimeRuler
-                            for (int i = 0; i < _numberOfDayColumns; i++)
-                              Container(
-                                width: _dayColumnWidth,
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(
-                                      color: Colors.grey[350]!,
-                                      width: 0.5,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: SizedBox(
+                      height: totalCalendarHeight,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 60.0 + (_numberOfDayColumns * _dayColumnWidth),
+                          child: Stack(
+                            children: [
+                              // Garis-garis vertikal untuk pemisah hari/kolom
+                              Row(
+                                children: [
+                                  const SizedBox(width: 60), // Space untuk TimeRuler
+                                  for (int i = 0; i < _numberOfDayColumns; i++)
+                                    Container(
+                                      width: _dayColumnWidth,
+                                      height: totalCalendarHeight,
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          left: BorderSide(
+                                            color: Colors.grey[350]!,
+                                            width: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              // Time Ruler dan Booking Items
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TimeRuler(
+                                    hourHeight: _hourHeight,
+                                    timeSlots: _timeSlots,
+                                  ),
+                                  // Area untuk booking items
+                                  SizedBox(
+                                    width: _numberOfDayColumns * _dayColumnWidth,
+                                    height: totalCalendarHeight,
+                                    child: Stack(
+                                      children: _bookings.map((booking) {
+                                        if (booking.dayColumn < _numberOfDayColumns) {
+                                          return BookingItem(
+                                            booking: booking,
+                                            hourHeight: _hourHeight,
+                                            dayColumnWidth: _dayColumnWidth,
+                                            onCancelBooking: _cancelBooking,
+                                          );
+                                        }
+                                        return const SizedBox.shrink();
+                                      }).toList(),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
-                          ],
+                            ],
+                          ),
                         ),
-                        // Time Ruler dan Booking Items
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TimeRuler(
-                              hourHeight: _hourHeight,
-                              timeSlots: _timeSlots,
-                            ),
-                            // Area untuk booking items
-                            SizedBox(
-                              width: _numberOfDayColumns * _dayColumnWidth,
-                              height: totalCalendarHeight,
-                              child: Stack(
-                                children: _bookings.map((booking) {
-                                  if (booking.dayColumn < _numberOfDayColumns) {
-                                    return BookingItem(
-                                      booking: booking,
-                                      hourHeight: _hourHeight,
-                                      dayColumnWidth: _dayColumnWidth,
-                                      onCancelBooking: _cancelBooking,
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                }).toList(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 15.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -262,7 +283,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     onPressed: _handleProfileOrLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 15,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25.0),
                       ),
@@ -272,9 +296,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       style: const TextStyle(color: Colors.black87),
                     ),
                   ),
-                  NewBookingButton(
-                    onPressed: _showBookingForm,
-                  ),
+                  NewBookingButton(onPressed: _showBookingForm),
                 ],
               ),
             ),

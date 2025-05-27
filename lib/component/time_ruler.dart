@@ -12,7 +12,6 @@ class TimeRuler extends StatelessWidget {
   }) : super(key: key);
 
   // Helper untuk menghitung posisi Y untuk setiap slot waktu
-  // relatif terhadap awal timeline (07:30)
   double _calculateSlotOffsetY(String startTime) {
     final parts = startTime.split('.');
     final hour = int.parse(parts[0]);
@@ -33,27 +32,39 @@ class TimeRuler extends StatelessWidget {
     return (diffMinutes / 60.0) * hourHeight;
   }
 
-
   @override
   Widget build(BuildContext context) {
     List<Widget> timeMarkers = [];
 
+    // Tambahkan marker untuk waktu awal (07:30)
+    timeMarkers.add(
+      const Positioned(
+        top: 0,
+        left: 8,
+        child: Text(
+          '07.30',
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+      ),
+    );
+
     for (var slot in timeSlots) {
       final startTime = slot['start']!;
-      // Tampilkan hanya waktu mulai untuk setiap slot
-      timeMarkers.add(
-        Positioned(
-          top: _calculateSlotOffsetY(startTime) - 8, // Penyesuaian posisi teks
-          left: 8, // Beri sedikit padding dari kiri
-          child: Text(
-            startTime,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+      if (startTime != '07.30') { // Skip jika ini adalah waktu awal
+        timeMarkers.add(
+          Positioned(
+            top: _calculateSlotOffsetY(startTime),
+            left: 8,
+            child: Text(
+              startTime,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
 
-    // Hitung tinggi total ruler berdasarkan slot terakhir
+    // Hitung tinggi total ruler
     double totalHeight = 0;
     if (timeSlots.isNotEmpty) {
       final lastSlotEnd = timeSlots.last['end']!;
@@ -67,14 +78,22 @@ class TimeRuler extends StatelessWidget {
       final slotEndTotalMinutes = hour * 60 + minute;
       final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
       final diffMinutes = slotEndTotalMinutes - timelineStartTotalMinutes;
-      totalHeight = (diffMinutes / 60.0) * hourHeight + hourHeight /2 ; // Tambah sedikit buffer
+      totalHeight = (diffMinutes / 60.0) * hourHeight + hourHeight; // Tambah buffer untuk waktu terakhir
     }
 
-
-    return SizedBox(
-      width: 60, // Lebar area time ruler disesuaikan
-      height: totalHeight, // Tinggi ruler dinamis
+    return Container(
+      width: 60,
+      height: totalHeight,
+      decoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(
+            color: Colors.grey[350]!,
+            width: 0.5,
+          ),
+        ),
+      ),
       child: Stack(
+        clipBehavior: Clip.none, // Izinkan overflow untuk memastikan semua teks terlihat
         children: timeMarkers,
       ),
     );
