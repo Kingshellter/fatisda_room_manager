@@ -155,23 +155,25 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.8, // 80% dari lebar layar
-          maxHeight: MediaQuery.of(context).size.height * 0.9, // 90% dari tinggi layar
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
         ),
         child: AlertDialog(
           title: const Text('BOOKING YOUR ROOM', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-          contentPadding: const EdgeInsets.all(16.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          insetPadding: EdgeInsets.zero,
           content: SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   const Text('Input Data Dengan Benar!', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   _buildSectionTitle('Identitas'),
                   _buildTextFormField(_nameController, 'Nama'),
@@ -231,7 +233,6 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           onChanged: (value) {
                             setState(() {
                               _selectedStartTime = value;
-                              // Reset end time if it's no longer valid
                               if (_selectedEndTime != null && 
                                   _compareTimeStrings(_selectedStartTime!, _selectedEndTime!) >= 0) {
                                 _selectedEndTime = null;
@@ -253,7 +254,6 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -262,8 +262,9 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
-                      '${DateTime.now().day} ${_getMonthName(DateTime.now().month)}, ${DateTime.now().year}',
+                      DateFormat('d MMM, y').format(DateTime.now()),
                       style: const TextStyle(color: Colors.blueAccent),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -271,16 +272,21 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
             ),
           ),
           actions: <Widget>[
-            Center(
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ElevatedButton(
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.greenAccent[400],
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15)
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25.0),
+                  ),
                 ),
                 child: const Text('Booking Now', style: TextStyle(color: Colors.white)),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -303,7 +309,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
         ),
         validator: (value) {
           if (!isOptional && (value == null || value.isEmpty)) {
@@ -328,7 +334,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
         decoration: InputDecoration(
           labelText: hint,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
         ),
         value: value,
         hint: Text(hint),
