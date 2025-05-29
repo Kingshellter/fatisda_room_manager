@@ -154,128 +154,136 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('BOOKING YOUR ROOM', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-      contentPadding: const EdgeInsets.all(16.0),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const Text('Input Data Dengan Benar!', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey)),
-              const SizedBox(height: 20),
+    return Dialog(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8, // 80% dari lebar layar
+          maxHeight: MediaQuery.of(context).size.height * 0.9, // 90% dari tinggi layar
+        ),
+        child: AlertDialog(
+          title: const Text('BOOKING YOUR ROOM', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+          contentPadding: const EdgeInsets.all(16.0),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text('Input Data Dengan Benar!', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 20),
 
-              _buildSectionTitle('Identitas'),
-              _buildTextFormField(_nameController, 'Nama'),
-              _buildTextFormField(_majorController, 'Prodi'),
-              _buildTextFormField(_classYearController, 'Angkatan'),
-              const SizedBox(height: 20),
+                  _buildSectionTitle('Identitas'),
+                  _buildTextFormField(_nameController, 'Nama'),
+                  _buildTextFormField(_majorController, 'Prodi'),
+                  _buildTextFormField(_classYearController, 'Angkatan'),
+                  const SizedBox(height: 20),
 
-              _buildSectionTitle('Keperluan'),
-              _buildDropdownFormField<String>(
-                value: _selectedNecessary,
-                hint: 'Pilih Keperluan',
-                items: _necessaries,
-                onChanged: (value) => setState(() => _selectedNecessary = value),
-                itemText: (item) => item,
-              ),
-              _buildTextFormField(_notesController, 'Catatan (Opsional)', isOptional: true, maxLines: 3),
-              _buildTextFormField(_courseController, 'Mata kuliah'),
-              _buildTextFormField(_lecturerController, 'Dosen'),
-              _buildDropdownFormField<String>(
-                value: _selectedRoom,
-                hint: 'Pilih Room',
-                items: widget.rooms,
-                onChanged: (value) => setState(() => _selectedRoom = value),
-                itemText: (item) => item,
-              ),
-              const SizedBox(height: 20),
-
-              _buildSectionTitle('Pilih Waktu'),
-              InkWell(
-                onTap: () => _selectDate(context),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8.0),
+                  _buildSectionTitle('Keperluan'),
+                  _buildDropdownFormField<String>(
+                    value: _selectedNecessary,
+                    hint: 'Pilih Keperluan',
+                    items: _necessaries,
+                    onChanged: (value) => setState(() => _selectedNecessary = value),
+                    itemText: (item) => item,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        DateFormat('E, MMM d, y').format(_selectedDate),
-                        style: const TextStyle(fontSize: 16),
+                  _buildTextFormField(_notesController, 'Catatan (Opsional)', isOptional: true, maxLines: 3),
+                  _buildTextFormField(_courseController, 'Mata kuliah'),
+                  _buildTextFormField(_lecturerController, 'Dosen'),
+                  _buildDropdownFormField<String>(
+                    value: _selectedRoom,
+                    hint: 'Pilih Room',
+                    items: widget.rooms,
+                    onChanged: (value) => setState(() => _selectedRoom = value),
+                    itemText: (item) => item,
+                  ),
+                  const SizedBox(height: 20),
+
+                  _buildSectionTitle('Pilih Waktu'),
+                  InkWell(
+                    onTap: () => _selectDate(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      const Icon(Icons.calendar_today),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildDropdownFormField<String>(
-                      value: _selectedStartTime,
-                      hint: 'Start Time',
-                      items: _startTimes,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStartTime = value;
-                          // Reset end time if it's no longer valid
-                          if (_selectedEndTime != null && 
-                              _compareTimeStrings(_selectedStartTime!, _selectedEndTime!) >= 0) {
-                            _selectedEndTime = null;
-                          }
-                        });
-                      },
-                      itemText: (time) => time,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            DateFormat('E, MMM d, y').format(_selectedDate),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const Icon(Icons.calendar_today),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildDropdownFormField<String>(
-                      value: _selectedEndTime,
-                      hint: 'End Time',
-                      items: _getValidEndTimes(),
-                      onChanged: (value) => setState(() => _selectedEndTime = value),
-                      itemText: (time) => time,
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDropdownFormField<String>(
+                          value: _selectedStartTime,
+                          hint: 'Start Time',
+                          items: _startTimes,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedStartTime = value;
+                              // Reset end time if it's no longer valid
+                              if (_selectedEndTime != null && 
+                                  _compareTimeStrings(_selectedStartTime!, _selectedEndTime!) >= 0) {
+                                _selectedEndTime = null;
+                              }
+                            });
+                          },
+                          itemText: (time) => time,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDropdownFormField<String>(
+                          value: _selectedEndTime,
+                          hint: 'End Time',
+                          items: _getValidEndTimes(),
+                          onChanged: (value) => setState(() => _selectedEndTime = value),
+                          itemText: (time) => time,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blueAccent),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      '${DateTime.now().day} ${_getMonthName(DateTime.now().month)}, ${DateTime.now().year}',
+                      style: const TextStyle(color: Colors.blueAccent),
                     ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  '${DateTime.now().day} ${_getMonthName(DateTime.now().month)}, ${DateTime.now().year}',
-                  style: const TextStyle(color: Colors.blueAccent),
-                ),
-              ),
-            ],
+            ),
           ),
+          actions: <Widget>[
+            Center(
+              child: ElevatedButton(
+                onPressed: _submitForm,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent[400],
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15)
+                ),
+                child: const Text('Booking Now', style: TextStyle(color: Colors.white)),
+              ),
+            )
+          ],
         ),
       ),
-      actions: <Widget>[
-        Center(
-          child: ElevatedButton(
-            onPressed: _submitForm,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.greenAccent[400],
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15)
-            ),
-            child: const Text('Booking Now', style: TextStyle(color: Colors.white)),
-          ),
-        )
-      ],
     );
   }
 

@@ -76,8 +76,8 @@ class _BookingScreenState extends State<BookingScreen> {
     // First, filter bookings for the selected date
     final dayBookings = _bookings.where((booking) {
       return booking.bookingDate.year == _selectedDate.year &&
-             booking.bookingDate.month == _selectedDate.month &&
-             booking.bookingDate.day == _selectedDate.day;
+          booking.bookingDate.month == _selectedDate.month &&
+          booking.bookingDate.day == _selectedDate.day;
     }).toList();
 
     // Sort bookings by creation time (oldest first)
@@ -124,10 +124,14 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // Daftar ruangan (contoh)
   final List<String> _availableRooms = [
-    'Ruang A101',
-    'Ruang B203',
-    'Lab Komputer 1',
-    'Aula Fatisda',
+    'Ruang B404',
+    'Ruang B405',
+    'Ruang B406',
+    'Ruang B410',
+    'Ruang B411',
+    'Ruang B412',
+    'Lab 3 TIK lt.3',
+    'Lab 4 TIK lt.4',
   ];
 
   final double _hourHeight =
@@ -294,7 +298,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                         _numberOfDayColumns * _dayColumnWidth,
                                     height: totalCalendarHeight,
                                     child: Stack(
-                                      children: _filteredBookings.map((booking) {
+                                      children: _filteredBookings.map((
+                                        booking,
+                                      ) {
                                         return BookingItem(
                                           booking: booking,
                                           hourHeight: _hourHeight,
