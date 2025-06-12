@@ -83,16 +83,19 @@ class _BookingScreenState extends State<BookingScreen> {
     // Sort bookings by creation time (oldest first)
     dayBookings.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    // Assign dayColumn based on sorted order
-    for (int i = 0; i < dayBookings.length; i++) {
-      final booking = dayBookings[i];
-      // Create a new booking with updated dayColumn
-      final updatedBooking = Booking(
+    // Update dayColumn based on room index
+    return dayBookings.map((booking) {
+      // Dapatkan indeks ruangan untuk booking ini
+      final roomIndex = _availableRooms.indexOf(booking.room);
+      if (roomIndex == -1) return booking; // Jika ruangan tidak ditemukan, kembalikan booking asli
+
+      // Buat booking baru dengan dayColumn yang sesuai dengan indeks ruangan
+      return Booking(
         title: booking.title,
         startTime: booking.startTime,
         endTime: booking.endTime,
         color: booking.color,
-        dayColumn: i, // Set column based on creation order
+        dayColumn: roomIndex, // Set kolom berdasarkan indeks ruangan
         room: booking.room,
         studentName: booking.studentName,
         major: booking.major,
@@ -103,10 +106,7 @@ class _BookingScreenState extends State<BookingScreen> {
         bookingDate: booking.bookingDate,
         createdAt: booking.createdAt,
       );
-      dayBookings[i] = updatedBooking;
-    }
-
-    return dayBookings;
+    }).toList();
   }
 
   // Daftar slot waktu sesuai permintaan
@@ -122,7 +122,7 @@ class _BookingScreenState extends State<BookingScreen> {
     {'jam': '9', 'start': '16.25', 'end': '17.15'},
   ];
 
-  // Daftar ruangan (contoh)
+  // Daftar ruangan
   final List<String> _availableRooms = [
     'Ruang B404',
     'Ruang B405',
@@ -134,11 +134,11 @@ class _BookingScreenState extends State<BookingScreen> {
     'Lab 4 TIK lt.4',
   ];
 
-  final double _hourHeight =
-      100.0; // Tinggi representasi satu jam di UI (bisa disesuaikan)
-  final int _numberOfDayColumns =
-      5; // Jumlah kolom hari yang ingin ditampilkan (misal Senin-Jumat)
-  final double _dayColumnWidth = 150.0; // Lebar setiap kolom hari
+  final double _hourHeight = 100.0;
+  final double _dayColumnWidth = 150.0;
+  
+  // Mengubah numberOfDayColumns menjadi sesuai jumlah ruangan
+  int get _numberOfDayColumns => _availableRooms.length;
 
   void _addBooking(Booking newBooking) {
     setState(() {
@@ -156,14 +156,27 @@ class _BookingScreenState extends State<BookingScreen> {
 
   void _cancelBooking(Booking booking) {
     setState(() {
-      _bookings.remove(booking);
+      // Cari dan hapus booking yang sesuai berdasarkan semua properti yang relevan
+      _bookings.removeWhere((b) => 
+        b.room == booking.room &&
+        b.startTime == booking.startTime &&
+        b.endTime == booking.endTime &&
+        b.bookingDate.year == booking.bookingDate.year &&
+        b.bookingDate.month == booking.bookingDate.month &&
+        b.bookingDate.day == booking.bookingDate.day &&
+        b.title == booking.title &&
+        b.studentName == booking.studentName
+      );
     });
+    
+    // Tampilkan snackbar konfirmasi
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           'Booking untuk ${booking.title} di ${booking.room} berhasil dibatalkan!',
         ),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -187,6 +200,7 @@ class _BookingScreenState extends State<BookingScreen> {
         return BookingFormDialog(
           onBookingConfirmed: _addBooking,
           rooms: _availableRooms,
+          existingBookings: _bookings,
         );
       },
     );
@@ -254,63 +268,111 @@ class _BookingScreenState extends State<BookingScreen> {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 4.0),
+                    padding: EdgeInsets.zero, // Hilangkan padding
                     child: SizedBox(
-                      height: totalCalendarHeight,
+                      height: totalCalendarHeight + 40,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
                           width: 60.0 + (_numberOfDayColumns * _dayColumnWidth),
-                          child: Stack(
+                          child: Column(
                             children: [
-                              // Garis-garis vertikal untuk pemisah hari/kolom
+                              // Header Ruangan
                               Row(
                                 children: [
-                                  const SizedBox(
-                                    width: 60,
-                                  ), // Space untuk TimeRuler
-                                  for (int i = 0; i < _numberOfDayColumns; i++)
+                                  const SizedBox(width: 60),
+                                  for (int i = 0; i < _availableRooms.length; i++)
                                     Container(
                                       width: _dayColumnWidth,
-                                      height: totalCalendarHeight,
+                                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                                       decoration: BoxDecoration(
                                         border: Border(
-                                          left: BorderSide(
-                                            color: Colors.grey[350]!,
-                                            width: 0.5,
-                                          ),
+                                          left: BorderSide(color: Colors.grey[350]!, width: 0.5),
+                                          bottom: BorderSide(color: Colors.grey[350]!, width: 0.5),
                                         ),
+                                        color: Colors.grey[100],
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Baris pertama untuk "Ruang" atau "Lab"
+                                          Text(
+                                            _availableRooms[i].contains('Lab') ? 'Lab' : 'Ruang',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          // Baris kedua untuk nomor ruangan
+                                          Text(
+                                            _availableRooms[i].contains('Lab') 
+                                              ? _availableRooms[i].split('Lab ')[1]  // Ambil bagian setelah "Lab "
+                                              : _availableRooms[i].split('Ruang ')[1], // Ambil bagian setelah "Ruang "
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                 ],
                               ),
-                              // Time Ruler dan Booking Items
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TimeRuler(
-                                    hourHeight: _hourHeight,
-                                    timeSlots: _timeSlots,
-                                  ),
-                                  // Area untuk booking items
-                                  SizedBox(
-                                    width:
-                                        _numberOfDayColumns * _dayColumnWidth,
-                                    height: totalCalendarHeight,
-                                    child: Stack(
-                                      children: _filteredBookings.map((
-                                        booking,
-                                      ) {
-                                        return BookingItem(
-                                          booking: booking,
-                                          hourHeight: _hourHeight,
-                                          dayColumnWidth: _dayColumnWidth,
-                                          onCancelBooking: _cancelBooking,
-                                        );
-                                      }).toList(),
+                              // Tabel Booking
+                              Expanded(
+                                child: Stack(
+                                  clipBehavior: Clip.none, // Izinkan overflow
+                                  children: [
+                                    // Garis-garis vertikal untuk pemisah hari/kolom
+                                    Row(
+                                      children: [
+                                        const SizedBox(width: 60),
+                                        for (int i = 0; i < _numberOfDayColumns; i++)
+                                          Container(
+                                            width: _dayColumnWidth,
+                                            height: totalCalendarHeight,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white, // Tambahkan background color
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: Colors.grey[350]!,
+                                                  width: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                    // Time Ruler dan Booking Items
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TimeRuler(
+                                          hourHeight: _hourHeight,
+                                          timeSlots: _timeSlots,
+                                        ),
+                                        // Area untuk booking items
+                                        SizedBox(
+                                          width: _numberOfDayColumns * _dayColumnWidth,
+                                          height: totalCalendarHeight,
+                                          child: Stack(
+                                            children: _filteredBookings.map((booking) {
+                                              return BookingItem(
+                                                booking: booking,
+                                                hourHeight: _hourHeight,
+                                                dayColumnWidth: _dayColumnWidth,
+                                                onCancelBooking: _cancelBooking,
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

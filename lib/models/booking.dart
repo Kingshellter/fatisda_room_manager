@@ -37,6 +37,34 @@ class Booking {
     DateTime? createdAt, // Make it optional with default value
   }) : createdAt = createdAt ?? DateTime.now(); // Set current time if not provided
 
+  // Override equals untuk membandingkan booking
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Booking &&
+        other.room == room &&
+        other.startTime == startTime &&
+        other.endTime == endTime &&
+        other.bookingDate.year == bookingDate.year &&
+        other.bookingDate.month == bookingDate.month &&
+        other.bookingDate.day == bookingDate.day &&
+        other.title == title &&
+        other.studentName == studentName;
+  }
+
+  // Override hashCode untuk mendukung equals
+  @override
+  int get hashCode => Object.hash(
+        room,
+        startTime,
+        endTime,
+        bookingDate.year,
+        bookingDate.month,
+        bookingDate.day,
+        title,
+        studentName,
+      );
+
   // Helper untuk mengubah string "HH.mm" menjadi TimeOfDay
   TimeOfDay _parseTime(String time) {
     final parts = time.split('.');

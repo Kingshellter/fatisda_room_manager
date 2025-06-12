@@ -6,11 +6,13 @@ import '../models/booking.dart'; // Sesuaikan path jika perlu
 class BookingFormDialog extends StatefulWidget {
   final Function(Booking) onBookingConfirmed;
   final List<String> rooms;
+  final List<Booking> existingBookings; // Tambahkan parameter untuk booking yang ada
 
   const BookingFormDialog({
     Key? key,
     required this.onBookingConfirmed,
     required this.rooms,
+    required this.existingBookings, // Tambahkan parameter ini
   }) : super(key: key);
 
   @override
@@ -79,41 +81,87 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
     }
   }
 
-  void _submitForm() {
+  // Fungsi untuk mengecek apakah ada booking yang bertabrakan
+  bool _hasConflictingBooking(String room, String startTime, String endTime, DateTime bookingDate) {
+    return widget.existingBookings.any((booking) {
+      // Cek apakah di ruangan yang sama dan tanggal yang sama
+      if (booking.room == room && 
+          booking.bookingDate.year == bookingDate.year &&
+          booking.bookingDate.month == bookingDate.month &&
+          booking.bookingDate.day == bookingDate.day) {
+        
+        // Konversi waktu booking yang ada ke menit
+        final existingStart = _timeToMinutes(booking.startTime);
+        final existingEnd = _timeToMinutes(booking.endTime);
+        
+        // Konversi waktu booking baru ke menit
+        final newStart = _timeToMinutes(startTime);
+        final newEnd = _timeToMinutes(endTime);
+
+        // Cek apakah waktu bertabrakan
+        return (newStart < existingEnd && newEnd > existingStart);
+      }
+      return false;
+    });
+  }
+
+  // Helper untuk mengkonversi format waktu "HH.mm" ke menit
+  int _timeToMinutes(String time) {
+    final parts = time.split('.');
+    return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+  }
+
+  void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
-      if (_selectedStartTime == null || _selectedEndTime == null || _selectedRoom == null || _selectedNecessary == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please complete all required fields!')),
-        );
-        return;
-      }
+      final selectedStartTime = _selectedStartTime;
+      final selectedEndTime = _selectedEndTime;
+      final selectedRoom = _selectedRoom;
 
-      // Validate that end time is after start time
-      if (_compareTimeStrings(_selectedStartTime!, _selectedEndTime!) >= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('End time must be after start time!')),
-        );
-        return;
-      }
+      if (selectedStartTime != null &&
+          selectedEndTime != null &&
+          selectedRoom != null) {
+            
+        // Cek konflik booking
+        if (_hasConflictingBooking(
+          selectedRoom,
+          selectedStartTime,
+          selectedEndTime,
+          _selectedDate
+        )) {
+          // Tampilkan pesan error jika ada konflik
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ruangan sudah dibooking untuk waktu tersebut!'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+          return;
+        }
 
-      final newBooking = Booking(
-        title: _courseController.text,
-        startTime: _selectedStartTime!,
-        endTime: _selectedEndTime!,
-        color: Colors.blueAccent,
-        dayColumn: 0,
-        room: _selectedRoom!,
-        studentName: _nameController.text,
-        major: _majorController.text,
-        classYear: _classYearController.text,
-        necessary: _selectedNecessary!,
-        notes: _notesController.text,
-        lecturer: _lecturerController.text,
-        bookingDate: _selectedDate,
-        createdAt: DateTime.now(),
-      );
-      widget.onBookingConfirmed(newBooking);
-      Navigator.of(context).pop();
+        // Dapatkan indeks ruangan yang dipilih
+        final roomIndex = widget.rooms.indexOf(selectedRoom);
+        
+        final booking = Booking(
+          title: _courseController.text,
+          startTime: selectedStartTime,
+          endTime: selectedEndTime,
+          color: _getRandomColor(),
+          dayColumn: roomIndex,
+          room: selectedRoom,
+          studentName: _nameController.text,
+          major: _majorController.text,
+          classYear: _classYearController.text,
+          necessary: _selectedNecessary!,
+          notes: _notesController.text,
+          lecturer: _lecturerController.text,
+          bookingDate: _selectedDate,
+          createdAt: DateTime.now(),
+        );
+
+        widget.onBookingConfirmed(booking);
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -276,7 +324,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ElevatedButton(
-                onPressed: _submitForm,
+                onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.greenAccent[400],
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -359,5 +407,17 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   String _getMonthName(int month) {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return monthNames[month - 1];
+  }
+
+  Color _getRandomColor() {
+    final colors = [
+      Colors.blue[400]!,
+      Colors.green[400]!,
+      Colors.orange[400]!,
+      Colors.purple[400]!,
+      Colors.red[400]!,
+      Colors.teal[400]!,
+    ];
+    return colors[DateTime.now().microsecond % colors.length];
   }
 }
