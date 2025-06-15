@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'component/input_field.dart';
 import 'component/auth_button.dart';
 import 'component/auth_header.dart';
+import '../services/auth_service.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -12,6 +13,7 @@ class SignUpScreen extends StatelessWidget {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController confirmPasswordController = TextEditingController();
+    final authService = AuthService();
 
     return Scaffold(
       body: Container(
@@ -80,9 +82,18 @@ class SignUpScreen extends StatelessWidget {
                           const SizedBox(height: 32),
                           AuthButton(
                             label: 'Sign Up',
-                            onPressed: () {
-                              print('Sign Up Pressed');
-                              // TODO: Implement sign up logic
+                            onPressed: () async {
+                              try {
+                                final response = await authService.register(
+                                  nameController.text,
+                                  emailController.text,
+                                  passwordController.text,
+                                  confirmPasswordController.text,
+                                );
+                                // Navigate ke login screen
+                              } catch (e) {
+                                // Tampilkan error message
+                              }
                             },
                           ),
                           const SizedBox(height: 60),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../models/auth_model.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final authService = AuthService();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profil Mahasiswa'),
@@ -25,22 +28,24 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            FutureBuilder<String?>(
-              future: AuthService().getCurrentUserEmail(),
+            FutureBuilder<UserResponse>(
+              future: authService.getCurrentUser(),
               builder: (context, snapshot) {
-                return Text(
-                  snapshot.data ?? 'Mahasiswa',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
+                if (snapshot.hasData) {
+                  return Column(
+                    children: [
+                      Text(snapshot.data!.name),
+                      Text(snapshot.data!.email),
+                    ],
+                  );
+                }
+                return CircularProgressIndicator();
               },
             ),
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () async {
-                await AuthService().logout();
+                await authService.logout();
                 if (context.mounted) {
                   Navigator.of(context).pop(); // Go back to main screen
                 }

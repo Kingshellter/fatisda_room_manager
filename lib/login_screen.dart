@@ -100,22 +100,23 @@ class LoginScreen extends StatelessWidget {
                          AuthButton(
                           label: 'Sign In',
                           onPressed: () async {
-                            final success = await AuthService().login(
-                              emailController.text,
-                              passwordController.text,
-                            );
-                            
-                            if (context.mounted) {
-                              if (success) {
-                                Navigator.pop(context); // Go back to main screen
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Email atau password salah!'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
+                            final authService = AuthService();
+                            try {
+                              final response = await authService.login(
+                                emailController.text,
+                                passwordController.text,
+                              );
+                              // Simpan token jika ada
+                              // Navigate ke home screen
+                              Navigator.pop(context);
+                            } catch (e) {
+                              // Tampilkan error message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Email atau password salah!'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
                             }
                           },
                          ),
