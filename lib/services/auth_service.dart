@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/auth_model.dart';
+import 'dart:io';
 
 class AuthService {
   static const String _isLoggedInKey = 'isLoggedIn';
@@ -9,7 +10,7 @@ class AuthService {
   static const String _tokenKey = 'auth_token';
 
   String? _token;
-  final String baseUrl = 'http://192.168.1.18:8000/api/v1';
+  final String baseUrl = 'http://localhost:8000/api/v1';
 
   // Singleton instance
   static final AuthService _instance = AuthService._internal();
@@ -32,17 +33,28 @@ class AuthService {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       print('Attempting login with email: $email');
+      print('Connecting to: $baseUrl/login');
+
       final requestBody = LoginRequest(
         email: email,
         password: password,
       ).toJson();
       print('Login request body: $requestBody');
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(requestBody),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/login'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(requestBody),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw Exception(
+                'Connection timeout. Please check your internet connection and server status.',
+              );
+            },
+          );
 
       print('Login response status: ${response.statusCode}');
       print('Login response body: ${response.body}');
@@ -54,14 +66,24 @@ class AuthService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool(_isLoggedInKey, true);
           await prefs.setString(_userEmailKey, email);
+          return data;
+        } else {
+          throw Exception('Token not found in response');
         }
-        return data;
       } else {
         throw Exception('Login failed: ${response.body}');
       }
     } catch (e) {
-      print('Login error: $e');
-      throw Exception('Error: $e');
+      print('Login error details:');
+      print('Error type: ${e.runtimeType}');
+      print('Error message: $e');
+      if (e is SocketException) {
+        print('Socket error details:');
+        print('Address: ${e.address}');
+        print('Port: ${e.port}');
+        print('OS Error: ${e.osError}');
+      }
+      throw Exception('Connection error: $e');
     }
   }
 

@@ -217,7 +217,7 @@ class _BookingScreenState extends State<BookingScreen> {
       _checkLoginStatus();
     } else {
       // Show login screen
-      await Navigator.push(
+      final result = await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
@@ -404,7 +404,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                     ),
                     child: Text(
-                      _isLoggedIn ? 'Mahasiswa' : 'Login',
+                      _isLoggedIn ? 'Profile' : 'Login',
                       style: const TextStyle(color: Colors.black87),
                     ),
                   ),

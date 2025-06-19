@@ -25,149 +25,148 @@ class LoginScreen extends StatelessWidget {
             colors: [Color(0xFF3A3A5A), Colors.white],
           ),
         ),
-        child: Stack(
-          children: [
-            // Back Button
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              left: 10,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Back Button
+              Positioned(
+                top: 0,
+                left: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-            ),
-            
-            Column(
-              children: [
-                // Header yang dipisah
-                const AuthHeader(title: 'Hallo,\nMahasiswa Fatisda!'),
-
-                // Bagian bawah: form login
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, -4),
-                        )
-                      ],
-                    ),
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-                          InputField(
-                            label: 'Email',
-                            controller: emailController,
-                            obscureText: false,
-                          ),
-                          const SizedBox(height: 16),
-                          InputField(
-                            label: 'Password',
-                            controller: passwordController,
-                            obscureText: true,
-                          ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                             onPressed: () {
-                              Navigator.push(
-                               context,
-                               MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                               );
-                              },
-                              child: const Text(
-                                'Lupa Password?',
-                                style: TextStyle(color: Colors.black87),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Tombol SIGN IN dari komponen terpisah
-                         AuthButton(
-                          label: 'Sign In',
-                          onPressed: () async {
-                            final authService = AuthService();
-                            try {
-                              final response = await authService.login(
-                                emailController.text,
-                                passwordController.text,
-                              );
-                              // Simpan token jika ada
-                              // Navigate ke home screen
-                              Navigator.pop(context);
-                            } catch (e) {
-                              // Tampilkan error message
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Email atau password salah!'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          },
-                         ),
-                          const SizedBox(height: 60), // Spasi bawah
+              // Main Content
+              Column(
+                children: [
+                  const AuthHeader(title: 'Hallo,\nMahasiswa Fatisda!'),
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, -4),
+                          )
                         ],
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Teks dan tombol Sign Up di kanan bawah
-            Positioned(
-              right: 16,
-              bottom: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "belum punya akun?",
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      print('Sign Up Pressed');
-                      // TODO: Navigate to Sign Up screen
-                       Navigator.push(
-                       context,
-                      MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                       );
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                        color: Colors.black,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            InputField(
+                              controller: emailController,
+                              label: 'Email',
+                              obscureText: false,
+                            ),
+                            const SizedBox(height: 16),
+                            InputField(
+                              controller: passwordController,
+                              label: 'Password',
+                              obscureText: true,
+                            ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ForgotPasswordScreen(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Lupa Password?',
+                                  style: TextStyle(color: Colors.black87),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            AuthButton(
+                              label: 'Sign In',
+                              onPressed: () async {
+                                final authService = AuthService();
+                                try {
+                                  final response = await authService.login(
+                                    emailController.text,
+                                    passwordController.text,
+                                  );
+                                  if (response['token'] != null) {
+                                    await authService.saveToken(response['token']);
+                                    if (context.mounted) {
+                                      Navigator.pop(context, true);
+                                    }
+                                  } else {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Token tidak ditemukan dalam respons'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                } catch (e) {
+                                  print('Login error: $e');
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error: ${e.toString()}'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Belum punya akun?",
+                                  style: TextStyle(color: Colors.black87),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const SignUpScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Sign Up',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF3A3A5A),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
