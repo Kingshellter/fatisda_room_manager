@@ -10,7 +10,7 @@ class AuthService {
   static const String _tokenKey = 'auth_token';
 
   String? _token;
-  final String baseUrl = 'http://192.168.0.106:8000/api/v1';
+  final String baseUrl = 'http://(192.168.0.106):8000/api/v1';
 
   // Singleton instance
   static final AuthService _instance = AuthService._internal();
