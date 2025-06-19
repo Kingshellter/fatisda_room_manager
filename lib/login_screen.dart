@@ -103,8 +103,8 @@ class LoginScreen extends StatelessWidget {
                                     emailController.text,
                                     passwordController.text,
                                   );
-                                  if (response['token'] != null) {
-                                    await authService.saveToken(response['token']);
+                                  if (response['data'] != null && response['data']['token'] != null) {
+                                    await authService.saveToken(response['data']['token']);
                                     if (context.mounted) {
                                       Navigator.pop(context, true);
                                     }

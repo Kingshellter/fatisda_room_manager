@@ -10,7 +10,7 @@ class AuthService {
   static const String _tokenKey = 'auth_token';
 
   String? _token;
-  final String baseUrl = 'http://localhost:8000/api/v1';
+  final String baseUrl = 'http://192.168.0.106:8000/api/v1';
 
   // Singleton instance
   static final AuthService _instance = AuthService._internal();
@@ -61,8 +61,8 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['token'] != null) {
-          await saveToken(data['token']);
+        if (data['data'] != null && data['data']['token'] != null) {
+          await saveToken(data['data']['token']);
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool(_isLoggedInKey, true);
           await prefs.setString(_userEmailKey, email);
@@ -131,7 +131,7 @@ class AuthService {
 
       print('Getting user profile with token: $token');
       final response = await http.get(
-        Uri.parse('$baseUrl/profile'),
+        Uri.parse('$baseUrl/me'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
