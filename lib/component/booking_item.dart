@@ -10,12 +10,12 @@ class BookingItem extends StatelessWidget {
   final Function(Booking) onCancelBooking;
 
   const BookingItem({
-    Key? key,
+    super.key,
     required this.booking,
     required this.hourHeight,
     required this.dayColumnWidth,
     required this.onCancelBooking,
-  }) : super(key: key);
+  });
 
   // Helper untuk menghitung posisi Y berdasarkan waktu
   double _calculateTimeOffset(String time) {
@@ -29,7 +29,8 @@ class BookingItem extends StatelessWidget {
 
     // Total menit dari awal hari
     final timeTotalMinutes = hour * 60 + minute;
-    final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
+    final timelineStartTotalMinutes =
+        timelineStartHour * 60 + timelineStartMinute;
 
     // Perbedaan dalam menit dari awal timeline
     final diffMinutes = timeTotalMinutes - timelineStartTotalMinutes;
@@ -68,11 +69,11 @@ class BookingItem extends StatelessWidget {
           onTap: () => _showBookingDetail(context),
           child: Container(
             decoration: BoxDecoration(
-              color: booking.color.withOpacity(0.8),
+              color: booking.color.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(4.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -96,10 +97,7 @@ class BookingItem extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     booking.room,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

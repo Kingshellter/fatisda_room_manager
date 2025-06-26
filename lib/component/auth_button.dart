@@ -4,11 +4,7 @@ class AuthButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
 
-  const AuthButton({
-    Key? key,
-    required this.label,
-    required this.onPressed,
-  }) : super(key: key);
+  const AuthButton({super.key, required this.label, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

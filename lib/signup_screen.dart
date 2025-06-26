@@ -5,14 +5,15 @@ import 'component/auth_header.dart';
 import '../services/auth_service.dart';
 
 class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
-    final TextEditingController confirmPasswordController = TextEditingController();
+    final TextEditingController confirmPasswordController =
+        TextEditingController();
     final authService = AuthService();
 
     return Scaffold(
@@ -47,7 +48,7 @@ class SignUpScreen extends StatelessWidget {
                           color: Colors.black26,
                           blurRadius: 10,
                           offset: Offset(0, -4),
-                        )
+                        ),
                       ],
                     ),
                     child: SingleChildScrollView(
@@ -84,7 +85,7 @@ class SignUpScreen extends StatelessWidget {
                             label: 'Sign Up',
                             onPressed: () async {
                               try {
-                                final response = await authService.register(
+                                await authService.register(
                                   nameController.text,
                                   emailController.text,
                                   passwordController.text,
@@ -142,4 +143,4 @@ class SignUpScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Add this import for date formatting
 import 'component/date_header.dart';
 import 'component/booking_item.dart';
-import 'component/login_button.dart';
 import 'component/new_booking_button.dart';
 import 'component/time_ruler.dart';
 import 'component/booking_form_dialog.dart';
@@ -17,7 +16,7 @@ void main() {
 }
 
 class FatisdaBookingApp extends StatelessWidget {
-  const FatisdaBookingApp({Key? key}) : super(key: key);
+  const FatisdaBookingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +25,12 @@ class FatisdaBookingApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.indigo, // Ganti tema jika diinginkan
         fontFamily: 'Roboto',
-        // Atur warna utama untuk dialog agar konsisten
-        dialogBackgroundColor: Colors.white,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white, // Warna teks tombol
           ),
         ),
+        dialogTheme: DialogThemeData(backgroundColor: Colors.white),
       ),
       home: const BookingScreen(),
       debugShowCheckedModeBanner: false,
@@ -41,7 +39,7 @@ class FatisdaBookingApp extends StatelessWidget {
 }
 
 class BookingScreen extends StatefulWidget {
-  const BookingScreen({Key? key}) : super(key: key);
+  const BookingScreen({super.key});
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -87,7 +85,9 @@ class _BookingScreenState extends State<BookingScreen> {
     return dayBookings.map((booking) {
       // Dapatkan indeks ruangan untuk booking ini
       final roomIndex = _availableRooms.indexOf(booking.room);
-      if (roomIndex == -1) return booking; // Jika ruangan tidak ditemukan, kembalikan booking asli
+      if (roomIndex == -1) {
+        return booking;
+      } // Jika ruangan tidak ditemukan, kembalikan booking asli
 
       // Buat booking baru dengan dayColumn yang sesuai dengan indeks ruangan
       return Booking(
@@ -136,7 +136,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   final double _hourHeight = 100.0;
   final double _dayColumnWidth = 150.0;
-  
+
   // Mengubah numberOfDayColumns menjadi sesuai jumlah ruangan
   int get _numberOfDayColumns => _availableRooms.length;
 
@@ -157,18 +157,19 @@ class _BookingScreenState extends State<BookingScreen> {
   void _cancelBooking(Booking booking) {
     setState(() {
       // Cari dan hapus booking yang sesuai berdasarkan semua properti yang relevan
-      _bookings.removeWhere((b) => 
-        b.room == booking.room &&
-        b.startTime == booking.startTime &&
-        b.endTime == booking.endTime &&
-        b.bookingDate.year == booking.bookingDate.year &&
-        b.bookingDate.month == booking.bookingDate.month &&
-        b.bookingDate.day == booking.bookingDate.day &&
-        b.title == booking.title &&
-        b.studentName == booking.studentName
+      _bookings.removeWhere(
+        (b) =>
+            b.room == booking.room &&
+            b.startTime == booking.startTime &&
+            b.endTime == booking.endTime &&
+            b.bookingDate.year == booking.bookingDate.year &&
+            b.bookingDate.month == booking.bookingDate.month &&
+            b.bookingDate.day == booking.bookingDate.day &&
+            b.title == booking.title &&
+            b.studentName == booking.studentName,
       );
     });
-    
+
     // Tampilkan snackbar konfirmasi
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -184,7 +185,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void _showBookingForm() async {
     if (!_isLoggedIn) {
       // Show login screen if not logged in
-      final result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
@@ -217,7 +218,7 @@ class _BookingScreenState extends State<BookingScreen> {
       _checkLoginStatus();
     } else {
       // Show login screen
-      final result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
@@ -281,14 +282,27 @@ class _BookingScreenState extends State<BookingScreen> {
                               Row(
                                 children: [
                                   const SizedBox(width: 60),
-                                  for (int i = 0; i < _availableRooms.length; i++)
+                                  for (
+                                    int i = 0;
+                                    i < _availableRooms.length;
+                                    i++
+                                  )
                                     Container(
                                       width: _dayColumnWidth,
-                                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0,
+                                        horizontal: 4.0,
+                                      ),
                                       decoration: BoxDecoration(
                                         border: Border(
-                                          left: BorderSide(color: Colors.grey[350]!, width: 0.5),
-                                          bottom: BorderSide(color: Colors.grey[350]!, width: 0.5),
+                                          left: BorderSide(
+                                            color: Colors.grey[350]!,
+                                            width: 0.5,
+                                          ),
+                                          bottom: BorderSide(
+                                            color: Colors.grey[350]!,
+                                            width: 0.5,
+                                          ),
                                         ),
                                         color: Colors.grey[100],
                                       ),
@@ -297,7 +311,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                         children: [
                                           // Baris pertama untuk "Ruang" atau "Lab"
                                           Text(
-                                            _availableRooms[i].contains('Lab') ? 'Lab' : 'Ruang',
+                                            _availableRooms[i].contains('Lab')
+                                                ? 'Lab'
+                                                : 'Ruang',
                                             style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500,
@@ -307,9 +323,13 @@ class _BookingScreenState extends State<BookingScreen> {
                                           const SizedBox(height: 2),
                                           // Baris kedua untuk nomor ruangan
                                           Text(
-                                            _availableRooms[i].contains('Lab') 
-                                              ? _availableRooms[i].split('Lab ')[1]  // Ambil bagian setelah "Lab "
-                                              : _availableRooms[i].split('Ruang ')[1], // Ambil bagian setelah "Ruang "
+                                            _availableRooms[i].contains('Lab')
+                                                ? _availableRooms[i].split(
+                                                    'Lab ',
+                                                  )[1] // Ambil bagian setelah "Lab "
+                                                : _availableRooms[i].split(
+                                                    'Ruang ',
+                                                  )[1], // Ambil bagian setelah "Ruang "
                                             style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500,
@@ -330,12 +350,17 @@ class _BookingScreenState extends State<BookingScreen> {
                                     Row(
                                       children: [
                                         const SizedBox(width: 60),
-                                        for (int i = 0; i < _numberOfDayColumns; i++)
+                                        for (
+                                          int i = 0;
+                                          i < _numberOfDayColumns;
+                                          i++
+                                        )
                                           Container(
                                             width: _dayColumnWidth,
                                             height: totalCalendarHeight,
                                             decoration: BoxDecoration(
-                                              color: Colors.white, // Tambahkan background color
+                                              color: Colors
+                                                  .white, // Tambahkan background color
                                               border: Border(
                                                 left: BorderSide(
                                                   color: Colors.grey[350]!,
@@ -348,7 +373,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                     ),
                                     // Time Ruler dan Booking Items
                                     Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         TimeRuler(
                                           hourHeight: _hourHeight,
@@ -356,10 +382,14 @@ class _BookingScreenState extends State<BookingScreen> {
                                         ),
                                         // Area untuk booking items
                                         SizedBox(
-                                          width: _numberOfDayColumns * _dayColumnWidth,
+                                          width:
+                                              _numberOfDayColumns *
+                                              _dayColumnWidth,
                                           height: totalCalendarHeight,
                                           child: Stack(
-                                            children: _filteredBookings.map((booking) {
+                                            children: _filteredBookings.map((
+                                              booking,
+                                            ) {
                                               return BookingItem(
                                                 booking: booking,
                                                 hourHeight: _hourHeight,

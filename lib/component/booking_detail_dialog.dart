@@ -6,10 +6,10 @@ class BookingDetailDialog extends StatelessWidget {
   final VoidCallback onCancel;
 
   const BookingDetailDialog({
-    Key? key,
+    super.key,
     required this.booking,
     required this.onCancel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +26,17 @@ class BookingDetailDialog extends StatelessWidget {
           children: [
             _buildDetailItem('Mata Kuliah', booking.title),
             _buildDetailItem('Ruangan', booking.room),
-            _buildDetailItem('Waktu', '${booking.startTime} - ${booking.endTime}'),
+            _buildDetailItem(
+              'Waktu',
+              '${booking.startTime} - ${booking.endTime}',
+            ),
             _buildDetailItem('Nama', booking.studentName),
             _buildDetailItem('Prodi', booking.major),
             _buildDetailItem('Angkatan', booking.classYear),
             _buildDetailItem('Keperluan', booking.necessary),
             _buildDetailItem('Dosen', booking.lecturer),
-            if (booking.notes.isNotEmpty) _buildDetailItem('Catatan', booking.notes),
+            if (booking.notes.isNotEmpty)
+              _buildDetailItem('Catatan', booking.notes),
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
@@ -42,7 +46,10 @@ class BookingDetailDialog extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 15,
+                  ),
                 ),
                 child: const Text(
                   'Batalkan Booking',
@@ -73,14 +80,11 @@ class BookingDetailDialog extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
           ),
           const Divider(),
         ],
       ),
     );
   }
-} 
+}

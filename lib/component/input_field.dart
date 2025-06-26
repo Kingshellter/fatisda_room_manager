@@ -6,11 +6,11 @@ class InputField extends StatelessWidget {
   final bool obscureText;
 
   const InputField({
-    Key? key,
+    super.key,
     required this.label,
     required this.controller,
     this.obscureText = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +24,7 @@ class InputField extends StatelessWidget {
           obscureText: obscureText,
           decoration: InputDecoration(
             hintText: 'Value',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             fillColor: Colors.white,
             filled: true,
           ),

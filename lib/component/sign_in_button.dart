@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class SignInButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const SignInButton({Key? key, required this.onPressed}) : super(key: key);
+  const SignInButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +20,7 @@ class SignInButton extends StatelessWidget {
           elevation: 5,
         ),
         onPressed: onPressed,
-        child: const Text(
-          'SIGN IN',
-          style: TextStyle(fontSize: 16),
-        ),
+        child: const Text('SIGN IN', style: TextStyle(fontSize: 16)),
       ),
     );
   }
