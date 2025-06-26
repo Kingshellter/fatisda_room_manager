@@ -3,8 +3,10 @@ import '../component/input_field.dart';
 import '../component/auth_button.dart';
 import '../component/auth_header.dart';
 
+import 'dart:developer' as developer;
+
 class ForgotPasswordScreen extends StatelessWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+  const ForgotPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                       color: Colors.black26,
                       blurRadius: 10,
                       offset: Offset(0, -4),
-                    )
+                    ),
                   ],
                 ),
                 child: SingleChildScrollView(
@@ -66,8 +68,9 @@ class ForgotPasswordScreen extends StatelessWidget {
                       AuthButton(
                         label: 'Send Reset Link',
                         onPressed: () {
-                          print('Reset link sent to ${emailController.text}');
-                          // TODO: Implement password reset logic
+                          developer.log(
+                            'Reset link sent to ${emailController.text}',
+                          );
                         },
                       ),
                       const SizedBox(height: 16),

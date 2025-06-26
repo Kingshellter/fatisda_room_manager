@@ -6,14 +6,15 @@ import '../models/booking.dart'; // Sesuaikan path jika perlu
 class BookingFormDialog extends StatefulWidget {
   final Function(Booking) onBookingConfirmed;
   final List<String> rooms;
-  final List<Booking> existingBookings; // Tambahkan parameter untuk booking yang ada
+  final List<Booking>
+  existingBookings; // Tambahkan parameter untuk booking yang ada
 
   const BookingFormDialog({
-    Key? key,
+    super.key,
     required this.onBookingConfirmed,
     required this.rooms,
     required this.existingBookings, // Tambahkan parameter ini
-  }) : super(key: key);
+  });
 
   @override
   State<BookingFormDialog> createState() => _BookingFormDialogState();
@@ -37,16 +38,30 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   DateTime _selectedDate = DateTime.now();
 
   final List<String> _necessaries = ['Kuliah', 'Rapat', 'Seminar', 'Lainnya'];
-  
+
   // Separate lists for start and end times
   final List<String> _startTimes = [
-    '07.30', '08.25', '09.20', '10.15', '11.10',
-    '13.00', '13.55', '15.30', '16.25'
+    '07.30',
+    '08.25',
+    '09.20',
+    '10.15',
+    '11.10',
+    '13.00',
+    '13.55',
+    '15.30',
+    '16.25',
   ];
 
   final List<String> _endTimes = [
-    '08.20', '09.15', '10.10', '11.05', '12.00',
-    '13.50', '14.45', '16.20', '17.15'
+    '08.20',
+    '09.15',
+    '10.10',
+    '11.05',
+    '12.00',
+    '13.50',
+    '14.45',
+    '16.20',
+    '17.15',
   ];
 
   Future<void> _selectDate(BuildContext context) async {
@@ -64,9 +79,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
               onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.indigo,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.indigo),
             ),
           ),
           child: child!,
@@ -82,18 +95,22 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   }
 
   // Fungsi untuk mengecek apakah ada booking yang bertabrakan
-  bool _hasConflictingBooking(String room, String startTime, String endTime, DateTime bookingDate) {
+  bool _hasConflictingBooking(
+    String room,
+    String startTime,
+    String endTime,
+    DateTime bookingDate,
+  ) {
     return widget.existingBookings.any((booking) {
       // Cek apakah di ruangan yang sama dan tanggal yang sama
-      if (booking.room == room && 
+      if (booking.room == room &&
           booking.bookingDate.year == bookingDate.year &&
           booking.bookingDate.month == bookingDate.month &&
           booking.bookingDate.day == bookingDate.day) {
-        
         // Konversi waktu booking yang ada ke menit
         final existingStart = _timeToMinutes(booking.startTime);
         final existingEnd = _timeToMinutes(booking.endTime);
-        
+
         // Konversi waktu booking baru ke menit
         final newStart = _timeToMinutes(startTime);
         final newEnd = _timeToMinutes(endTime);
@@ -120,13 +137,12 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
       if (selectedStartTime != null &&
           selectedEndTime != null &&
           selectedRoom != null) {
-            
         // Cek konflik booking
         if (_hasConflictingBooking(
           selectedRoom,
           selectedStartTime,
           selectedEndTime,
-          _selectedDate
+          _selectedDate,
         )) {
           // Tampilkan pesan error jika ada konflik
           ScaffoldMessenger.of(context).showSnackBar(
@@ -141,7 +157,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
 
         // Dapatkan indeks ruangan yang dipilih
         final roomIndex = widget.rooms.indexOf(selectedRoom);
-        
+
         final booking = Booking(
           title: _courseController.text,
           startTime: selectedStartTime,
@@ -169,12 +185,12 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   int _compareTimeStrings(String time1, String time2) {
     final parts1 = time1.split('.');
     final parts2 = time2.split('.');
-    
+
     int hours1 = int.parse(parts1[0]);
     int minutes1 = int.parse(parts1[1]);
     int hours2 = int.parse(parts2[0]);
     int minutes2 = int.parse(parts2[1]);
-    
+
     if (hours1 != hours2) {
       return hours1.compareTo(hours2);
     }
@@ -184,9 +200,11 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   // Helper to get valid end times based on selected start time
   List<String> _getValidEndTimes() {
     if (_selectedStartTime == null) return _endTimes;
-    return _endTimes.where((endTime) => 
-      _compareTimeStrings(_selectedStartTime!, endTime) < 0
-    ).toList();
+    return _endTimes
+        .where(
+          (endTime) => _compareTimeStrings(_selectedStartTime!, endTime) < 0,
+        )
+        .toList();
   }
 
   @override
@@ -210,8 +228,15 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
           maxHeight: MediaQuery.of(context).size.height * 0.9,
         ),
         child: AlertDialog(
-          title: const Text('BOOKING YOUR ROOM', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          title: const Text(
+            'BOOKING YOUR ROOM',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 20.0,
+          ),
           insetPadding: EdgeInsets.zero,
           content: SingleChildScrollView(
             child: Form(
@@ -220,7 +245,11 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  const Text('Input Data Dengan Benar!', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text(
+                    'Input Data Dengan Benar!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   const SizedBox(height: 16),
 
                   _buildSectionTitle('Identitas'),
@@ -234,10 +263,16 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                     value: _selectedNecessary,
                     hint: 'Pilih Keperluan',
                     items: _necessaries,
-                    onChanged: (value) => setState(() => _selectedNecessary = value),
+                    onChanged: (value) =>
+                        setState(() => _selectedNecessary = value),
                     itemText: (item) => item,
                   ),
-                  _buildTextFormField(_notesController, 'Catatan (Opsional)', isOptional: true, maxLines: 3),
+                  _buildTextFormField(
+                    _notesController,
+                    'Catatan (Opsional)',
+                    isOptional: true,
+                    maxLines: 3,
+                  ),
                   _buildTextFormField(_courseController, 'Mata kuliah'),
                   _buildTextFormField(_lecturerController, 'Dosen'),
                   _buildDropdownFormField<String>(
@@ -281,8 +316,12 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           onChanged: (value) {
                             setState(() {
                               _selectedStartTime = value;
-                              if (_selectedEndTime != null && 
-                                  _compareTimeStrings(_selectedStartTime!, _selectedEndTime!) >= 0) {
+                              if (_selectedEndTime != null &&
+                                  _compareTimeStrings(
+                                        _selectedStartTime!,
+                                        _selectedEndTime!,
+                                      ) >=
+                                      0) {
                                 _selectedEndTime = null;
                               }
                             });
@@ -296,7 +335,8 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           value: _selectedEndTime,
                           hint: 'End Time',
                           items: _getValidEndTimes(),
-                          onChanged: (value) => setState(() => _selectedEndTime = value),
+                          onChanged: (value) =>
+                              setState(() => _selectedEndTime = value),
                           itemText: (time) => time,
                         ),
                       ),
@@ -332,7 +372,10 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                     borderRadius: BorderRadius.circular(25.0),
                   ),
                 ),
-                child: const Text('Booking Now', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Booking Now',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -344,11 +387,23 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.orangeAccent,
+        ),
+      ),
     );
   }
 
-  Widget _buildTextFormField(TextEditingController controller, String label, {bool isOptional = false, int maxLines = 1}) {
+  Widget _buildTextFormField(
+    TextEditingController controller,
+    String label, {
+    bool isOptional = false,
+    int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
@@ -357,7 +412,10 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12.0,
+            vertical: 12.0,
+          ),
         ),
         validator: (value) {
           if (!isOptional && (value == null || value.isEmpty)) {
@@ -382,16 +440,16 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
         decoration: InputDecoration(
           labelText: hint,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12.0,
+            vertical: 12.0,
+          ),
         ),
         value: value,
         hint: Text(hint),
         isExpanded: true,
         items: items.map((T item) {
-          return DropdownMenuItem<T>(
-            value: item,
-            child: Text(itemText(item)),
-          );
+          return DropdownMenuItem<T>(value: item, child: Text(itemText(item)));
         }).toList(),
         onChanged: onChanged,
         validator: (value) {
@@ -402,11 +460,6 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
         },
       ),
     );
-  }
-
-  String _getMonthName(int month) {
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return monthNames[month - 1];
   }
 
   Color _getRandomColor() {

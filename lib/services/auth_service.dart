@@ -4,6 +4,8 @@ import 'dart:convert';
 import '../models/auth_model.dart';
 import 'dart:io';
 
+import 'dart:developer' as developer;
+
 class AuthService {
   static const String _isLoggedInKey = 'isLoggedIn';
   static const String _userEmailKey = 'userEmail';
@@ -32,14 +34,14 @@ class AuthService {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      print('Attempting login with email: $email');
-      print('Connecting to: $baseUrl/login');
+      developer.log('Attempting login with email: $email');
+      developer.log('Connecting to: $baseUrl/login');
 
       final requestBody = LoginRequest(
         email: email,
         password: password,
       ).toJson();
-      print('Login request body: $requestBody');
+      developer.log('Login request body: $requestBody');
 
       final response = await http
           .post(
@@ -56,8 +58,8 @@ class AuthService {
             },
           );
 
-      print('Login response status: ${response.statusCode}');
-      print('Login response body: ${response.body}');
+      developer.log('Login response status: ${response.statusCode}');
+      developer.log('Login response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -74,14 +76,14 @@ class AuthService {
         throw Exception('Login failed: ${response.body}');
       }
     } catch (e) {
-      print('Login error details:');
-      print('Error type: ${e.runtimeType}');
-      print('Error message: $e');
+      developer.log('Login error details:');
+      developer.log('Error type: ${e.runtimeType}');
+      developer.log('Error message: $e');
       if (e is SocketException) {
-        print('Socket error details:');
-        print('Address: ${e.address}');
-        print('Port: ${e.port}');
-        print('OS Error: ${e.osError}');
+        developer.log('Socket error details:');
+        developer.log('Address: ${e.address}');
+        developer.log('Port: ${e.port}');
+        developer.log('OS Error: ${e.osError}');
       }
       throw Exception('Connection error: $e');
     }
@@ -94,7 +96,7 @@ class AuthService {
     String confirmationPassword,
   ) async {
     try {
-      print('Attempting register with email: $email');
+      developer.log('Attempting register with email: $email');
       final response = await http.post(
         Uri.parse('$baseUrl/register'),
         headers: {'Content-Type': 'application/json'},
@@ -108,8 +110,8 @@ class AuthService {
         ),
       );
 
-      print('Register response status: ${response.statusCode}');
-      print('Register response body: ${response.body}');
+      developer.log('Register response status: ${response.statusCode}');
+      developer.log('Register response body: ${response.body}');
 
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -117,7 +119,7 @@ class AuthService {
         throw Exception('Registration failed: ${response.body}');
       }
     } catch (e) {
-      print('Register error: $e');
+      developer.log('Register error: $e');
       throw Exception('Error: $e');
     }
   }
@@ -129,7 +131,7 @@ class AuthService {
         throw Exception('No token found');
       }
 
-      print('Getting user profile with token: $token');
+      developer.log('Getting user profile with token: $token');
       final response = await http.get(
         Uri.parse('$baseUrl/me'),
         headers: {
@@ -138,8 +140,8 @@ class AuthService {
         },
       );
 
-      print('Profile response status: ${response.statusCode}');
-      print('Profile response body: ${response.body}');
+      developer.log('Profile response status: ${response.statusCode}');
+      developer.log('Profile response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return UserResponse.fromJson(jsonDecode(response.body));
@@ -147,7 +149,7 @@ class AuthService {
         throw Exception('Failed to get user data');
       }
     } catch (e) {
-      print('Get profile error: $e');
+      developer.log('Get profile error: $e');
       throw Exception('Error: $e');
     }
   }

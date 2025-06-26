@@ -6,8 +6,10 @@ import '../component/auth_button.dart';
 import '../component/auth_header.dart';
 import 'services/auth_service.dart';
 
+import 'dart:developer' as developer;
+
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class LoginScreen extends StatelessWidget {
                             color: Colors.black26,
                             blurRadius: 10,
                             offset: Offset(0, -4),
-                          )
+                          ),
                         ],
                       ),
                       child: SingleChildScrollView(
@@ -83,7 +85,8 @@ class LoginScreen extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const ForgotPasswordScreen(),
+                                      builder: (context) =>
+                                          const ForgotPasswordScreen(),
                                     ),
                                   );
                                 },
@@ -103,23 +106,30 @@ class LoginScreen extends StatelessWidget {
                                     emailController.text,
                                     passwordController.text,
                                   );
-                                  if (response['data'] != null && response['data']['token'] != null) {
-                                    await authService.saveToken(response['data']['token']);
+                                  if (response['data'] != null &&
+                                      response['data']['token'] != null) {
+                                    await authService.saveToken(
+                                      response['data']['token'],
+                                    );
                                     if (context.mounted) {
                                       Navigator.pop(context, true);
                                     }
                                   } else {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         const SnackBar(
-                                          content: Text('Token tidak ditemukan dalam respons'),
+                                          content: Text(
+                                            'Token tidak ditemukan dalam respons',
+                                          ),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
                                     }
                                   }
                                 } catch (e) {
-                                  print('Login error: $e');
+                                  developer.log('Login error: $e');
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -144,7 +154,8 @@ class LoginScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const SignUpScreen(),
+                                        builder: (context) =>
+                                            const SignUpScreen(),
                                       ),
                                     );
                                   },

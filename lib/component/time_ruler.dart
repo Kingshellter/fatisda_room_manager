@@ -6,10 +6,10 @@ class TimeRuler extends StatelessWidget {
   final List<Map<String, String>> timeSlots; // Daftar slot waktu
 
   const TimeRuler({
-    Key? key,
+    super.key,
     required this.hourHeight,
     required this.timeSlots,
-  }) : super(key: key);
+  });
 
   // Helper untuk menghitung posisi Y untuk setiap slot waktu
   double _calculateSlotOffsetY(String startTime) {
@@ -23,7 +23,8 @@ class TimeRuler extends StatelessWidget {
 
     // Total menit dari awal hari
     final slotStartTotalMinutes = hour * 60 + minute;
-    final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
+    final timelineStartTotalMinutes =
+        timelineStartHour * 60 + timelineStartMinute;
 
     // Perbedaan dalam menit dari awal timeline
     final diffMinutes = slotStartTotalMinutes - timelineStartTotalMinutes;
@@ -50,7 +51,8 @@ class TimeRuler extends StatelessWidget {
 
     for (var slot in timeSlots) {
       final startTime = slot['start']!;
-      if (startTime != '07.30') { // Skip jika ini adalah waktu awal
+      if (startTime != '07.30') {
+        // Skip jika ini adalah waktu awal
         timeMarkers.add(
           Positioned(
             top: _calculateSlotOffsetY(startTime),
@@ -76,24 +78,23 @@ class TimeRuler extends StatelessWidget {
       const timelineStartMinute = 30;
 
       final slotEndTotalMinutes = hour * 60 + minute;
-      final timelineStartTotalMinutes = timelineStartHour * 60 + timelineStartMinute;
+      final timelineStartTotalMinutes =
+          timelineStartHour * 60 + timelineStartMinute;
       final diffMinutes = slotEndTotalMinutes - timelineStartTotalMinutes;
-      totalHeight = (diffMinutes / 60.0) * hourHeight + hourHeight; // Tambah buffer untuk waktu terakhir
+      totalHeight =
+          (diffMinutes / 60.0) * hourHeight +
+          hourHeight; // Tambah buffer untuk waktu terakhir
     }
 
     return Container(
       width: 60,
       height: totalHeight,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: Colors.grey[350]!,
-            width: 0.5,
-          ),
-        ),
+        border: Border(right: BorderSide(color: Colors.grey[350]!, width: 0.5)),
       ),
       child: Stack(
-        clipBehavior: Clip.none, // Izinkan overflow untuk memastikan semua teks terlihat
+        clipBehavior:
+            Clip.none, // Izinkan overflow untuk memastikan semua teks terlihat
         children: timeMarkers,
       ),
     );
