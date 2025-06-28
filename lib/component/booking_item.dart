@@ -158,20 +158,22 @@ class _BookingItemState extends State<BookingItem>
                 Row(
                   children: [
                     Expanded(
-                      child: TextButton(
+                      child: ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        style: TextButton.styleFrom(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3A3A5A),
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          elevation: 0,
                         ),
                         child: const Text(
                           'Close',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF6B7280),
                           ),
                         ),
                       ),

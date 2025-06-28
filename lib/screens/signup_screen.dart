@@ -262,116 +262,289 @@ class _SignUpScreenState extends State<SignUpScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF3A3A5A), Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF4A4A6A), Color(0xFF3A3A5A), Color(0xFF2A2A4A)],
           ),
         ),
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                const AuthHeader(title: 'Buat\nAkun Baru'),
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, -4),
-                        ),
-                      ],
-                    ),
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Decorative circles
+              Positioned(
+                top: -50,
+                right: -50,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 100,
+                left: -30,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+              ),
+
+              Column(
+                children: [
+                  // Header Section
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 24),
-                          InputField(
-                            label: 'Full Name',
-                            controller: nameController,
-                            obscureText: false,
+                          const SizedBox(height: 40),
+                          Text(
+                            'Creat Your',
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              height: 1.2,
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          InputField(
-                            label: 'Email',
-                            controller: emailController,
-                            obscureText: false,
+                          Text(
+                            'Account',
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              height: 1.2,
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          InputField(
-                            label: 'Password',
-                            controller: passwordController,
-                            obscureText: true,
+                          const SizedBox(height: 12),
+                          Text(
+                            'Buat akunmu sekarang untuk mengakses semua fitur kami.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          InputField(
-                            label: 'Confirm Password',
-                            controller: confirmPasswordController,
-                            obscureText: true,
-                          ),
-                          const SizedBox(height: 32),
-                          AuthButton(
-                            label: isLoading
-                                ? 'Creating Account...'
-                                : 'Sign Up',
-                            onPressed: isLoading ? null : _onSignUpPressed,
-                            isLoading: isLoading,
-                          ),
-                          const SizedBox(height: 60),
                         ],
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            // Back button and Sign In text at the bottom
-            Positioned(
-              left: 16,
-              bottom: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Sudah Punya Akun?",
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  TextButton(
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                            Navigator.pop(context); // Go back to login screen
-                          },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                        color: isLoading ? Colors.grey : Colors.black,
+
+                  // Form Section
+                  Expanded(
+                    flex: 4,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 20,
+                            offset: Offset(0, -8),
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(32),
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Form indicator
+                              Center(
+                                child: Container(
+                                  width: 40,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+
+                              Text(
+                                'Daftar Sekarang',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Lengkapi data berikut untuk membuat akun',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+
+                              InputField(
+                                label: 'Nama Lengkap',
+                                controller: nameController,
+                                obscureText: false,
+                              ),
+                              const SizedBox(height: 20),
+                              InputField(
+                                label: 'Email',
+                                controller: emailController,
+                                obscureText: false,
+                              ),
+                              const SizedBox(height: 20),
+                              InputField(
+                                label: 'Password',
+                                controller: passwordController,
+                                obscureText: true,
+                              ),
+                              const SizedBox(height: 20),
+                              InputField(
+                                label: 'Konfirmasi Password',
+                                controller: confirmPasswordController,
+                                obscureText: true,
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Password requirements
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.blue.shade200,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline,
+                                          size: 16,
+                                          color: Colors.blue.shade600,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Persyaratan Password:',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.blue.shade800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '• Minimal 8 karakter\n• Pastikan password sama pada kedua field',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.blue.shade700,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+
+                              AuthButton(
+                                label: isLoading
+                                    ? 'Creating Account...'
+                                    : 'Buat Akun',
+                                onPressed: isLoading ? null : _onSignUpPressed,
+                                isLoading: isLoading,
+                              ),
+                              const SizedBox(height: 32),
+
+                              // Sign in section
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Sudah punya akun? ",
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: isLoading
+                                          ? null
+                                          : () {
+                                              Navigator.pop(context);
+                                            },
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 0,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Text(
+                                        'Masuk Sekarang',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF3A3A5A),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
