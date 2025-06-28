@@ -37,6 +37,7 @@ class Booking {
   final Room? room;
   final TimeSlot? timeSlot;
   final User? user;
+  final String? color;
   final String? keperluan;
   final String? mataKuliah;
   final String? dosen;
@@ -55,6 +56,7 @@ class Booking {
     required this.updatedAt,
     this.room,
     this.timeSlot,
+    this.color,
     this.user,
     this.keperluan,
     this.mataKuliah,
@@ -72,6 +74,7 @@ class Booking {
       purpose: json['purpose'] ?? '',
       status: json['status'] ?? '',
       adminNotes: json['admin_notes'],
+      color: json['color'],
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
       room: json['room'] != null ? Room.fromJson(json['room']) : null,

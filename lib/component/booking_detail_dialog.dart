@@ -3,13 +3,8 @@ import '../models/booking.dart';
 
 class BookingDetailDialog extends StatelessWidget {
   final Booking booking;
-  final VoidCallback onCancel;
 
-  const BookingDetailDialog({
-    super.key,
-    required this.booking,
-    required this.onCancel,
-  });
+  const BookingDetailDialog({super.key, required this.booking});
 
   @override
   Widget build(BuildContext context) {
@@ -38,25 +33,6 @@ class BookingDetailDialog extends StatelessWidget {
             if (booking.notes.isNotEmpty)
               _buildDetailItem('Catatan', booking.notes),
             const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Tutup dialog
-                  onCancel(); // Panggil fungsi pembatalan
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 15,
-                  ),
-                ),
-                child: const Text(
-                  'Batalkan Booking',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
           ],
         ),
       ),
