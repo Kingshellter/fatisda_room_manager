@@ -1,9 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../models/auth_model.dart';
-import 'dart:io';
-
+import 'api_client.dart';
 import 'dart:developer' as developer;
 
 class AuthService {
@@ -11,8 +8,8 @@ class AuthService {
   static const String _userEmailKey = 'userEmail';
   static const String _tokenKey = 'auth_token';
 
+  final ApiClient _apiClient = ApiClient();
   String? _token;
-  final String baseUrl = 'http://(192.168.0.106):8000/api/v1';
 
   // Singleton instance
   static final AuthService _instance = AuthService._internal();
@@ -35,57 +32,34 @@ class AuthService {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       developer.log('Attempting login with email: $email');
-      developer.log('Connecting to: $baseUrl/login');
 
       final requestBody = LoginRequest(
         email: email,
         password: password,
       ).toJson();
-      developer.log('Login request body: $requestBody');
 
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/login'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode(requestBody),
-          )
-          .timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw Exception(
-                'Connection timeout. Please check your internet connection and server status.',
-              );
-            },
-          );
+      final response = await _apiClient.post('/login', body: requestBody);
 
-      developer.log('Login response status: ${response.statusCode}');
-      developer.log('Login response body: ${response.body}');
+      // Use ApiClient's response handler
+      final data = _apiClient.handleResponse<Map<String, dynamic>>(
+        response,
+        (data) => data,
+      );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['data'] != null && data['data']['token'] != null) {
-          await saveToken(data['data']['token']);
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool(_isLoggedInKey, true);
-          await prefs.setString(_userEmailKey, email);
-          return data;
-        } else {
-          throw Exception('Token not found in response');
-        }
+      if (data['success'] == true &&
+          data['data'] != null &&
+          data['data']['token'] != null) {
+        await saveToken(data['data']['token']);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_isLoggedInKey, true);
+        await prefs.setString(_userEmailKey, email);
+        return data;
       } else {
-        throw Exception('Login failed: ${response.body}');
+        throw Exception('Token not found in response');
       }
     } catch (e) {
-      developer.log('Login error details:');
-      developer.log('Error type: ${e.runtimeType}');
-      developer.log('Error message: $e');
-      if (e is SocketException) {
-        developer.log('Socket error details:');
-        developer.log('Address: ${e.address}');
-        developer.log('Port: ${e.port}');
-        developer.log('OS Error: ${e.osError}');
-      }
-      throw Exception('Connection error: $e');
+      developer.log('Login error: $e');
+      throw Exception('Login failed: $e');
     }
   }
 
@@ -97,30 +71,34 @@ class AuthService {
   ) async {
     try {
       developer.log('Attempting register with email: $email');
-      final response = await http.post(
-        Uri.parse('$baseUrl/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(
-          RegisterRequest(
-            name: name,
-            email: email,
-            password: password,
-            confirmationPassword: confirmationPassword,
-          ).toJson(),
-        ),
+
+      final requestBody = RegisterRequest(
+        name: name,
+        email: email,
+        password: password,
+        confirmationPassword: confirmationPassword,
+      ).toJson();
+
+      final response = await _apiClient.post('/register', body: requestBody);
+
+      // Use ApiClient's response handler
+      final data = _apiClient.handleResponse<Map<String, dynamic>>(
+        response,
+        (data) => data,
       );
 
-      developer.log('Register response status: ${response.statusCode}');
-      developer.log('Register response body: ${response.body}');
-
-      if (response.statusCode == 201) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Registration failed: ${response.body}');
+      if (data['success'] == true &&
+          data['data'] != null &&
+          data['data']['token'] != null) {
+        await saveToken(data['data']['token']);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_isLoggedInKey, true);
+        await prefs.setString(_userEmailKey, email);
       }
+      return data;
     } catch (e) {
       developer.log('Register error: $e');
-      throw Exception('Error: $e');
+      throw Exception('Registration failed: $e');
     }
   }
 
@@ -131,44 +109,69 @@ class AuthService {
         throw Exception('No token found');
       }
 
-      developer.log('Getting user profile with token: $token');
-      final response = await http.get(
-        Uri.parse('$baseUrl/me'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      developer.log(
+        'Getting user profile with token: ${token.substring(0, 20)}...',
       );
 
-      developer.log('Profile response status: ${response.statusCode}');
-      developer.log('Profile response body: ${response.body}');
+      final response = await _apiClient.get('/me', token: token);
 
-      if (response.statusCode == 200) {
-        return UserResponse.fromJson(jsonDecode(response.body));
-      } else {
-        throw Exception('Failed to get user data');
-      }
+      return _apiClient.handleResponse<UserResponse>(
+        response,
+        (data) => UserResponse.fromJson(data),
+        onUnauthorized: () async => await logout(),
+      );
     } catch (e) {
       developer.log('Get profile error: $e');
-      throw Exception('Error: $e');
+      throw Exception('Error getting user profile: $e');
     }
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_isLoggedInKey, false);
-    await prefs.remove(_userEmailKey);
-    await prefs.remove(_tokenKey);
-    _token = null;
+    try {
+      final token = await getToken();
+      if (token != null) {
+        // Call logout API
+        await _apiClient.post('/logout', token: token);
+      }
+    } catch (e) {
+      developer.log('Logout API error: $e');
+      // Continue with local logout even if API fails
+    } finally {
+      // Clear local storage
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_isLoggedInKey, false);
+      await prefs.remove(_userEmailKey);
+      await prefs.remove(_tokenKey);
+      _token = null;
+    }
   }
 
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isLoggedInKey) ?? false;
+    final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+    final token = prefs.getString(_tokenKey);
+
+    // If logged in but no token, clear the logged in status
+    if (isLoggedIn && token == null) {
+      await prefs.setBool(_isLoggedInKey, false);
+      return false;
+    }
+
+    return isLoggedIn;
   }
 
   Future<String?> getCurrentUserEmail() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userEmailKey);
+  }
+
+  // Helper method to check if token is valid
+  Future<bool> isTokenValid() async {
+    try {
+      await getCurrentUser();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

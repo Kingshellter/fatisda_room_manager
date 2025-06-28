@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 class DateHeader extends StatefulWidget {
   final String dateText;
+  final DateTime selectedDate;
   final Function(DateTime) onDateChanged;
 
   const DateHeader({
     super.key,
     required this.dateText,
+    required this.selectedDate,
     required this.onDateChanged,
   });
 
@@ -18,13 +20,13 @@ class _DateHeaderState extends State<DateHeader> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: widget.selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: Colors.indigo,
               onPrimary: Colors.white,
               onSurface: Colors.black,

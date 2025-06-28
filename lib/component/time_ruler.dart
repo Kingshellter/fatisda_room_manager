@@ -1,9 +1,9 @@
-// lib/component/time_ruler.dart
+// component/time_ruler.dart
 import 'package:flutter/material.dart';
 
 class TimeRuler extends StatelessWidget {
-  final double hourHeight; // Tinggi untuk setiap blok 1 jam
-  final List<Map<String, String>> timeSlots; // Daftar slot waktu
+  final double hourHeight;
+  final List<Map<String, String>> timeSlots;
 
   const TimeRuler({
     super.key,
@@ -11,91 +11,87 @@ class TimeRuler extends StatelessWidget {
     required this.timeSlots,
   });
 
-  // Helper untuk menghitung posisi Y untuk setiap slot waktu
-  double _calculateSlotOffsetY(String startTime) {
-    final parts = startTime.split('.');
-    final hour = int.parse(parts[0]);
-    final minute = int.parse(parts[1]);
-
-    // Waktu mulai timeline
-    const timelineStartHour = 7;
-    const timelineStartMinute = 30;
-
-    // Total menit dari awal hari
-    final slotStartTotalMinutes = hour * 60 + minute;
-    final timelineStartTotalMinutes =
-        timelineStartHour * 60 + timelineStartMinute;
-
-    // Perbedaan dalam menit dari awal timeline
-    final diffMinutes = slotStartTotalMinutes - timelineStartTotalMinutes;
-
-    // Konversi ke offset "jam"
-    return (diffMinutes / 60.0) * hourHeight;
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<Widget> timeMarkers = [];
-
-    // Tambahkan marker untuk waktu awal (07:30)
-    timeMarkers.add(
-      const Positioned(
-        top: 0,
-        left: 8,
-        child: Text(
-          '07.30',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-      ),
-    );
-
-    for (var slot in timeSlots) {
-      final startTime = slot['start']!;
-      if (startTime != '07.30') {
-        // Skip jika ini adalah waktu awal
-        timeMarkers.add(
-          Positioned(
-            top: _calculateSlotOffsetY(startTime),
-            left: 8,
-            child: Text(
-              startTime,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ),
-        );
-      }
-    }
-
-    // Hitung tinggi total ruler
-    double totalHeight = 0;
-    if (timeSlots.isNotEmpty) {
-      final lastSlotEnd = timeSlots.last['end']!;
-      final parts = lastSlotEnd.split('.');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
-
-      const timelineStartHour = 7;
-      const timelineStartMinute = 30;
-
-      final slotEndTotalMinutes = hour * 60 + minute;
-      final timelineStartTotalMinutes =
-          timelineStartHour * 60 + timelineStartMinute;
-      final diffMinutes = slotEndTotalMinutes - timelineStartTotalMinutes;
-      totalHeight =
-          (diffMinutes / 60.0) * hourHeight +
-          hourHeight; // Tambah buffer untuk waktu terakhir
-    }
-
     return Container(
       width: 60,
-      height: totalHeight,
       decoration: BoxDecoration(
-        border: Border(right: BorderSide(color: Colors.grey[350]!, width: 0.5)),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.grey[50]!, Colors.grey[100]!],
+        ),
+        border: Border(right: BorderSide(color: Colors.grey[200]!, width: 1)),
       ),
-      child: Stack(
-        clipBehavior:
-            Clip.none, // Izinkan overflow untuk memastikan semua teks terlihat
-        children: timeMarkers,
+      child: Column(
+        children: timeSlots.map((timeSlot) {
+          final startTime = timeSlot['start']!;
+          final endTime = timeSlot['end']!;
+          final jamKe = timeSlot['jam']!;
+
+          return Container(
+            height: hourHeight,
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Jam ke-
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    jamKe,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF667EEA),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Start time
+                Text(
+                  startTime,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
+                // Separator
+                Container(
+                  width: 20,
+                  height: 1,
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(0.5),
+                  ),
+                ),
+                // End time
+                Text(
+                  endTime,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
