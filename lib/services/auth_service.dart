@@ -80,6 +80,12 @@ class AuthService {
         }
       } else {
         final errorData = jsonDecode(response.body);
+
+        // For login errors, also preserve response structure for better error handling
+        if (response.statusCode == 422 && errorData['success'] == false) {
+          throw Exception(response.body);
+        }
+
         String errorMessage = 'Login failed';
 
         if (errorData['message'] != null) {
@@ -154,6 +160,13 @@ class AuthService {
         return data;
       } else {
         final errorData = jsonDecode(response.body);
+
+        // For registration errors, preserve the full response structure
+        if (response.statusCode == 422 && errorData['success'] == false) {
+          // This is a validation error, throw the full response for proper parsing
+          throw Exception(response.body);
+        }
+
         String errorMessage = 'Registration failed';
 
         if (errorData['message'] != null) {
