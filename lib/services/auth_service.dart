@@ -12,7 +12,8 @@ class AuthService {
   static const String _tokenKey = 'auth_token';
 
   String? _token;
-  final String baseUrl = 'http://(192.168.0.106):8000/api/v1';
+  // Ganti dengan IP server Laravel Anda
+  final String baseUrl = 'http://192.168.100.87:8000/api/v1';
 
   // Singleton instance
   static final AuthService _instance = AuthService._internal();
@@ -46,11 +47,14 @@ class AuthService {
       final response = await http
           .post(
             Uri.parse('$baseUrl/login'),
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
             body: jsonEncode(requestBody),
           )
           .timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 15),
             onTimeout: () {
               throw Exception(
                 'Connection timeout. Please check your internet connection and server status.',
@@ -63,7 +67,9 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['data'] != null && data['data']['token'] != null) {
+        if (data['success'] == true &&
+            data['data'] != null &&
+            data['data']['token'] != null) {
           await saveToken(data['data']['token']);
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool(_isLoggedInKey, true);
@@ -73,19 +79,33 @@ class AuthService {
           throw Exception('Token not found in response');
         }
       } else {
-        throw Exception('Login failed: ${response.body}');
+        final errorData = jsonDecode(response.body);
+        String errorMessage = 'Login failed';
+
+        if (errorData['message'] != null) {
+          errorMessage = errorData['message'];
+        } else if (errorData['data'] != null) {
+          errorMessage = errorData['data'].toString();
+        }
+
+        throw Exception(errorMessage);
       }
+    } on SocketException catch (e) {
+      developer.log('Socket error details:');
+      developer.log('Address: ${e.address}');
+      developer.log('Port: ${e.port}');
+      developer.log('OS Error: ${e.osError}');
+      throw Exception(
+        'Cannot connect to server. Please check your network connection and ensure the server is running.',
+      );
+    } on FormatException catch (e) {
+      developer.log('Format error: $e');
+      throw Exception('Invalid response from server');
     } catch (e) {
       developer.log('Login error details:');
       developer.log('Error type: ${e.runtimeType}');
       developer.log('Error message: $e');
-      if (e is SocketException) {
-        developer.log('Socket error details:');
-        developer.log('Address: ${e.address}');
-        developer.log('Port: ${e.port}');
-        developer.log('OS Error: ${e.osError}');
-      }
-      throw Exception('Connection error: $e');
+      throw Exception('Login failed: $e');
     }
   }
 
@@ -97,30 +117,61 @@ class AuthService {
   ) async {
     try {
       developer.log('Attempting register with email: $email');
-      final response = await http.post(
-        Uri.parse('$baseUrl/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(
-          RegisterRequest(
-            name: name,
-            email: email,
-            password: password,
-            confirmationPassword: confirmationPassword,
-          ).toJson(),
-        ),
-      );
+
+      final requestBody = RegisterRequest(
+        name: name,
+        email: email,
+        password: password,
+        confirmationPassword: confirmationPassword,
+      ).toJson();
+
+      developer.log('Register request body: $requestBody');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/register'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode(requestBody),
+          )
+          .timeout(const Duration(seconds: 15));
 
       developer.log('Register response status: ${response.statusCode}');
       developer.log('Register response body: ${response.body}');
 
       if (response.statusCode == 201) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        if (data['success'] == true &&
+            data['data'] != null &&
+            data['data']['token'] != null) {
+          await saveToken(data['data']['token']);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(_isLoggedInKey, true);
+          await prefs.setString(_userEmailKey, email);
+        }
+        return data;
       } else {
-        throw Exception('Registration failed: ${response.body}');
+        final errorData = jsonDecode(response.body);
+        String errorMessage = 'Registration failed';
+
+        if (errorData['message'] != null) {
+          errorMessage = errorData['message'];
+        } else if (errorData['data'] != null) {
+          errorMessage = errorData['data'].toString();
+        }
+
+        throw Exception(errorMessage);
       }
+    } on SocketException catch (e) {
+      developer.log('Socket error: $e');
+      throw Exception(
+        'Cannot connect to server. Please check your network connection.',
+      );
     } catch (e) {
       developer.log('Register error: $e');
-      throw Exception('Error: $e');
+      throw Exception('Registration failed: $e');
     }
   }
 
@@ -131,11 +182,14 @@ class AuthService {
         throw Exception('No token found');
       }
 
-      developer.log('Getting user profile with token: $token');
+      developer.log(
+        'Getting user profile with token: ${token.substring(0, 20)}...',
+      );
       final response = await http.get(
         Uri.parse('$baseUrl/me'),
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
       );
@@ -145,30 +199,71 @@ class AuthService {
 
       if (response.statusCode == 200) {
         return UserResponse.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 401) {
+        await logout(); // Token expired or invalid
+        throw Exception('Session expired. Please login again.');
       } else {
         throw Exception('Failed to get user data');
       }
     } catch (e) {
       developer.log('Get profile error: $e');
-      throw Exception('Error: $e');
+      throw Exception('Error getting user profile: $e');
     }
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_isLoggedInKey, false);
-    await prefs.remove(_userEmailKey);
-    await prefs.remove(_tokenKey);
-    _token = null;
+    try {
+      final token = await getToken();
+      if (token != null) {
+        // Call logout API
+        await http.post(
+          Uri.parse('$baseUrl/logout'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+      }
+    } catch (e) {
+      developer.log('Logout API error: $e');
+      // Continue with local logout even if API fails
+    } finally {
+      // Clear local storage
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_isLoggedInKey, false);
+      await prefs.remove(_userEmailKey);
+      await prefs.remove(_tokenKey);
+      _token = null;
+    }
   }
 
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isLoggedInKey) ?? false;
+    final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+    final token = prefs.getString(_tokenKey);
+
+    // If logged in but no token, clear the logged in status
+    if (isLoggedIn && token == null) {
+      await prefs.setBool(_isLoggedInKey, false);
+      return false;
+    }
+
+    return isLoggedIn;
   }
 
   Future<String?> getCurrentUserEmail() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userEmailKey);
+  }
+
+  // Helper method to check if token is valid
+  Future<bool> isTokenValid() async {
+    try {
+      await getCurrentUser();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

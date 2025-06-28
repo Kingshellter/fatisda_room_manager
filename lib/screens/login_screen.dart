@@ -4,18 +4,95 @@ import 'forgotpassword_screen.dart';
 import '../component/input_field.dart';
 import '../component/auth_button.dart';
 import '../component/auth_header.dart';
-import 'services/auth_service.dart';
+import '../component/custom_notification.dart'; // Add this import
+import '../services/auth_service.dart';
 
 import 'dart:developer' as developer;
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onLoginPressed() {
+    _handleLogin(); // Remove the isLoading check since button is now disabled
+  }
+
+  Future<void> _handleLogin() async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      CustomNotification.show(
+        context,
+        message: 'Please fill in all fields',
+        type: NotificationType.warning,
+        subtitle: 'Email and password are required',
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final authService = AuthService();
+      final response = await authService.login(
+        emailController.text.trim(),
+        passwordController.text,
+      );
+
+      if (response['success'] == true && response['data'] != null) {
+        if (mounted) {
+          CustomNotification.show(
+            context,
+            message: 'Welcome back!',
+            type: NotificationType.success,
+            subtitle: 'Hello, ${response['data']['user']['name']}',
+          );
+
+          // Wait a bit for the notification to show, then navigate
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            Navigator.pop(context, true);
+          }
+        }
+      } else {
+        throw Exception('Login failed: Invalid response format');
+      }
+    } catch (e) {
+      developer.log('Login error: $e');
+      if (mounted) {
+        CustomNotification.show(
+          context,
+          message: 'Login Failed',
+          type: NotificationType.error,
+          subtitle: e.toString().replaceAll('Exception: ', ''),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -81,15 +158,17 @@ class LoginScreen extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const ForgotPasswordScreen(),
-                                    ),
-                                  );
-                                },
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ForgotPasswordScreen(),
+                                          ),
+                                        );
+                                      },
                                 child: const Text(
                                   'Lupa Password?',
                                   style: TextStyle(color: Colors.black87),
@@ -98,48 +177,9 @@ class LoginScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             AuthButton(
-                              label: 'Sign In',
-                              onPressed: () async {
-                                final authService = AuthService();
-                                try {
-                                  final response = await authService.login(
-                                    emailController.text,
-                                    passwordController.text,
-                                  );
-                                  if (response['data'] != null &&
-                                      response['data']['token'] != null) {
-                                    await authService.saveToken(
-                                      response['data']['token'],
-                                    );
-                                    if (context.mounted) {
-                                      Navigator.pop(context, true);
-                                    }
-                                  } else {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Token tidak ditemukan dalam respons',
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                } catch (e) {
-                                  developer.log('Login error: $e');
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: ${e.toString()}'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
+                              label: isLoading ? 'Signing In...' : 'Sign In',
+                              onPressed: isLoading ? null : _onLoginPressed,
+                              isLoading: isLoading,
                             ),
                             const SizedBox(height: 24),
                             Row(
@@ -150,15 +190,17 @@ class LoginScreen extends StatelessWidget {
                                   style: TextStyle(color: Colors.black87),
                                 ),
                                 TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SignUpScreen(),
-                                      ),
-                                    );
-                                  },
+                                  onPressed: isLoading
+                                      ? null
+                                      : () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const SignUpScreen(),
+                                            ),
+                                          );
+                                        },
                                   child: const Text(
                                     'Sign Up',
                                     style: TextStyle(

@@ -1,13 +1,12 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Add this import for date formatting
+import 'package:intl/intl.dart';
 import 'component/date_header.dart';
 import 'component/booking_item.dart';
 import 'component/new_booking_button.dart';
 import 'component/time_ruler.dart';
 import 'component/booking_form_dialog.dart';
 import 'models/booking.dart';
-import 'login_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'services/auth_service.dart';
 
@@ -23,12 +22,10 @@ class FatisdaBookingApp extends StatelessWidget {
     return MaterialApp(
       title: 'Fatisda Booking',
       theme: ThemeData(
-        primarySwatch: Colors.indigo, // Ganti tema jika diinginkan
+        primarySwatch: Colors.indigo,
         fontFamily: 'Roboto',
         elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white, // Warna teks tombol
-          ),
+          style: ElevatedButton.styleFrom(foregroundColor: Colors.white),
         ),
         dialogTheme: DialogThemeData(backgroundColor: Colors.white),
       ),

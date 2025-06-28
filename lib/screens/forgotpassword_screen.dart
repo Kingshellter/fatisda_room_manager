@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../component/input_field.dart';
-import '../component/auth_button.dart';
-import '../component/auth_header.dart';
+import '../../component/input_field.dart';
+import '../../component/auth_button.dart';
+import '../../component/auth_header.dart';
 
 import 'dart:developer' as developer;
 
