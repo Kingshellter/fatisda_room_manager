@@ -122,7 +122,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             context,
             message: 'Account Created Successfully!',
             type: NotificationType.success,
-            subtitle: 'Welcome to Fatisda Booking System',
+            subtitle: 'Login for your new account.',
           );
 
           // Wait a bit for the notification to show, then navigate back to login
