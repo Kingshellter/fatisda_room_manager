@@ -108,7 +108,6 @@ class _DateHeaderState extends State<DateHeader> {
   }
 }
 
-// ALTERNATIF 1: Jika ingin layout yang lebih responsive
 class DateHeaderResponsive extends StatefulWidget {
   final String dateText;
   final DateTime selectedDate;
@@ -186,30 +185,31 @@ class _DateHeaderResponsiveState extends State<DateHeaderResponsive> {
                     Flexible(
                       child: Text(
                         widget.dateText,
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 14 : 16,
+                        style: const TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Colors.black87,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
+                        textAlign: TextAlign.end,
                       ),
                     ),
 
                     const SizedBox(width: 4),
 
-                    IconButton(
-                      icon: Icon(
-                        Icons.edit_calendar_outlined,
-                        color: Colors.black54,
-                        size: isSmallScreen ? 20 : 24,
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.edit_calendar_outlined,
+                          color: Colors.black54,
+                          size: 20,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _selectDate(context),
                       ),
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(
-                        minWidth: isSmallScreen ? 28 : 32,
-                        minHeight: isSmallScreen ? 28 : 32,
-                      ),
-                      onPressed: () => _selectDate(context),
                     ),
                   ],
                 ),
@@ -222,7 +222,6 @@ class _DateHeaderResponsiveState extends State<DateHeaderResponsive> {
   }
 }
 
-// ALTERNATIF 2: Layout dengan IntrinsicHeight untuk auto-sizing
 class DateHeaderAutoSize extends StatefulWidget {
   final String dateText;
   final DateTime selectedDate;
@@ -292,7 +291,6 @@ class _DateHeaderAutoSizeState extends State<DateHeaderAutoSize> {
 
             const SizedBox(width: 8),
 
-            // Date section dengan flex
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -301,7 +299,7 @@ class _DateHeaderAutoSizeState extends State<DateHeaderAutoSize> {
                     child: Text(
                       widget.dateText,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
