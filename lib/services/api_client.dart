@@ -4,7 +4,8 @@ import 'dart:io';
 import 'dart:developer' as developer;
 
 class ApiClient {
-  static const String baseUrl = 'http://192.168.100.87:8000/api/v1';
+  static const String baseUrl =
+      'http://192.168.100.87:8000/api/v1'; // ganti denggan API pada computer dengan perintah ipconfig
   static const Duration defaultTimeout = Duration(seconds: 15);
 
   // Singleton instance
