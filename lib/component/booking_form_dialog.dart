@@ -63,7 +63,9 @@ class _BookingFormDialogState extends State<BookingFormDialog>
   void initState() {
     super.initState();
     _selectedDate = widget.selectedDate;
-    _availableTimeSlotsForRoom = widget.availableTimeSlots;
+    _availableTimeSlotsForRoom = _getFilteredTimeSlots(
+      widget.availableTimeSlots,
+    );
 
     // Initialize animations
     _slideController = AnimationController(
@@ -100,35 +102,140 @@ class _BookingFormDialogState extends State<BookingFormDialog>
     super.dispose();
   }
 
+  // Helper method to filter and validate data for dropdowns
+  List<T> _getUniqueItems<T>(List<T> items, String Function(T) getKey) {
+    if (items.isEmpty) return [];
+
+    final Map<String, T> uniqueMap = {};
+    for (final item in items) {
+      if (item != null) {
+        final key = getKey(item);
+        if (key.isNotEmpty && !uniqueMap.containsKey(key)) {
+          uniqueMap[key] = item;
+        }
+      }
+    }
+    return uniqueMap.values.toList();
+  }
+
+  // Filter time slots to remove duplicates and null values
+  List<TimeSlot> _getFilteredTimeSlots(List<TimeSlot> timeSlots) {
+    return _getUniqueItems<TimeSlot>(
+      timeSlots,
+      (timeSlot) =>
+          '${timeSlot.id}_${timeSlot.startTimeFormatted}_${timeSlot.endTimeFormatted}',
+    );
+  }
+
+  // Filter rooms to remove duplicates and null values
+  List<Room> _getFilteredRooms(List<Room> rooms) {
+    return _getUniqueItems<Room>(
+      rooms,
+      (room) => '${room.id}_${room.displayName}',
+    );
+  }
+
+  // Check if time slot is already booked
+  bool _isTimeSlotBooked(TimeSlot timeSlot, Room room) {
+    if (widget.existingBookings.isEmpty) return false;
+
+    final dateString = DateFormat('yyyy-MM-dd').format(_selectedDate);
+
+    return widget.existingBookings.any((booking) {
+      final bookingDateString = DateFormat(
+        'yyyy-MM-dd',
+      ).format(booking.bookingDate);
+      return bookingDateString == dateString &&
+          booking.room == room.displayName &&
+          booking.startTime == timeSlot.startTimeFormatted &&
+          booking.endTime == timeSlot.endTimeFormatted;
+    });
+  }
+
   Future<void> _updateAvailableTimeSlots() async {
-    if (_selectedRoom == null) return;
+    if (_selectedRoom == null) {
+      setState(() {
+        _availableTimeSlotsForRoom = [];
+        _selectedTimeSlot = null;
+      });
+      return;
+    }
 
     try {
+      // Get available time slots from API
       final availableTimeSlotMaps = await _dataService.getAvailableTimeSlots(
         _selectedRoom!.displayName,
         _selectedDate,
       );
 
-      final availableTimeSlots = <TimeSlot>[];
-      for (final timeSlotMap in availableTimeSlotMaps) {
-        final timeSlot = widget.availableTimeSlots.firstWhere(
-          (ts) =>
-              ts.startTimeFormatted == timeSlotMap['start'] &&
-              ts.endTimeFormatted == timeSlotMap['end'],
-          orElse: () => widget.availableTimeSlots.first,
-        );
-        availableTimeSlots.add(timeSlot);
+      if (availableTimeSlotMaps.isEmpty) {
+        setState(() {
+          _availableTimeSlotsForRoom = [];
+          _selectedTimeSlot = null;
+        });
+        return;
       }
 
+      // Convert API response to TimeSlot objects
+      final availableTimeSlots = <TimeSlot>[];
+      for (final timeSlotMap in availableTimeSlotMaps) {
+        if (timeSlotMap != null &&
+            timeSlotMap['start'] != null &&
+            timeSlotMap['end'] != null) {
+          final matchingTimeSlot = widget.availableTimeSlots.firstWhere(
+            (ts) =>
+                ts.startTimeFormatted == timeSlotMap['start'] &&
+                ts.endTimeFormatted == timeSlotMap['end'],
+            orElse: () => TimeSlot(
+              id:
+                  int.tryParse(
+                    '${timeSlotMap['start']}_${timeSlotMap['end']}'.hashCode
+                        .toString(),
+                  ) ??
+                  0,
+              startTime: timeSlotMap['start']!,
+              endTime: timeSlotMap['end']!,
+              label: '${timeSlotMap['start']} - ${timeSlotMap['end']}',
+              isActive: true,
+              createdAt: DateTime.now().toIso8601String(),
+              updatedAt: DateTime.now().toIso8601String(),
+            ),
+          );
+
+          // Double check - make sure this slot is not already booked
+          if (!_isTimeSlotBooked(matchingTimeSlot, _selectedRoom!)) {
+            availableTimeSlots.add(matchingTimeSlot);
+          }
+        }
+      }
+
+      // Filter to ensure unique time slots
+      final filteredTimeSlots = _getFilteredTimeSlots(availableTimeSlots);
+
       setState(() {
-        _availableTimeSlotsForRoom = availableTimeSlots;
-        if (_selectedTimeSlot != null &&
-            !_availableTimeSlotsForRoom.contains(_selectedTimeSlot)) {
-          _selectedTimeSlot = null;
+        _availableTimeSlotsForRoom = filteredTimeSlots;
+
+        // Check if currently selected time slot is still available
+        if (_selectedTimeSlot != null) {
+          final isStillAvailable = _availableTimeSlotsForRoom.any(
+            (ts) =>
+                ts.id == _selectedTimeSlot!.id ||
+                (ts.startTimeFormatted ==
+                        _selectedTimeSlot!.startTimeFormatted &&
+                    ts.endTimeFormatted == _selectedTimeSlot!.endTimeFormatted),
+          );
+
+          if (!isStillAvailable) {
+            _selectedTimeSlot = null;
+          }
         }
       });
     } catch (e) {
       debugPrint('Error updating available time slots: $e');
+      setState(() {
+        _availableTimeSlotsForRoom = [];
+        _selectedTimeSlot = null;
+      });
     }
   }
 
@@ -147,6 +254,15 @@ class _BookingFormDialogState extends State<BookingFormDialog>
 
     if (_selectedKeperluan.isEmpty) {
       _showError('Please select purpose');
+      return;
+    }
+
+    // Additional validation - check if slot is still available
+    if (_isTimeSlotBooked(_selectedTimeSlot!, _selectedRoom!)) {
+      _showError(
+        'Selected time slot is no longer available. Please choose another time.',
+      );
+      await _updateAvailableTimeSlots(); // Refresh available slots
       return;
     }
 
@@ -183,6 +299,7 @@ class _BookingFormDialogState extends State<BookingFormDialog>
       if (availabilityCheck['success'] != true ||
           availabilityCheck['data']?['available'] != true) {
         _showError('Selected time slot is no longer available');
+        await _updateAvailableTimeSlots(); // Refresh available slots
         return;
       }
 
@@ -240,7 +357,8 @@ class _BookingFormDialogState extends State<BookingFormDialog>
   }
 
   Booking _convertApiBookingToAppBooking(api_booking.Booking apiBooking) {
-    final roomIndex = widget.availableRooms.indexWhere(
+    final filteredRooms = _getFilteredRooms(widget.availableRooms);
+    final roomIndex = filteredRooms.indexWhere(
       (room) => room.id == apiBooking.roomId,
     );
 
@@ -351,6 +469,12 @@ class _BookingFormDialogState extends State<BookingFormDialog>
     String? hint,
     String? Function(T?)? validator,
   }) {
+    // Filter items to ensure no nulls and unique values
+    final filteredItems = items.where((item) => item != null).toList();
+
+    // Ensure value is in the filtered list
+    final validValue = filteredItems.contains(value) ? value : null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -377,8 +501,9 @@ class _BookingFormDialogState extends State<BookingFormDialog>
               ],
             ),
             child: DropdownButtonFormField<T>(
-              value: value,
+              value: validValue,
               validator: validator,
+              isExpanded: true, // Prevent overflow
               decoration: InputDecoration(
                 hintText: hint,
                 prefixIcon: Icon(icon, color: const Color(0xFF667EEA)),
@@ -404,15 +529,34 @@ class _BookingFormDialogState extends State<BookingFormDialog>
                   vertical: 16,
                 ),
               ),
-              items: items.map((item) {
-                return DropdownMenuItem<T>(
-                  value: item,
-                  child: Text(getLabel(item)),
-                );
-              }).toList(),
-              onChanged: onChanged,
+              items: filteredItems.isEmpty
+                  ? []
+                  : filteredItems.map((item) {
+                      return DropdownMenuItem<T>(
+                        value: item,
+                        child: Text(
+                          getLabel(item),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      );
+                    }).toList(),
+              onChanged: filteredItems.isEmpty ? null : onChanged,
             ),
           ),
+          // Show message if no items available
+          if (filteredItems.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'No ${label.toLowerCase()} available',
+                style: const TextStyle(
+                  color: Colors.orange,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -500,6 +644,9 @@ class _BookingFormDialogState extends State<BookingFormDialog>
 
   @override
   Widget build(BuildContext context) {
+    // Get filtered data for dropdowns
+    final filteredRooms = _getFilteredRooms(widget.availableRooms);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: FadeTransition(
@@ -649,7 +796,7 @@ class _BookingFormDialogState extends State<BookingFormDialog>
                               label: 'Room',
                               icon: Icons.meeting_room,
                               value: _selectedRoom,
-                              items: widget.availableRooms,
+                              items: filteredRooms,
                               getLabel: (room) => room.displayName,
                               hint: 'Select a room',
                               onChanged: (Room? newValue) {
@@ -674,7 +821,11 @@ class _BookingFormDialogState extends State<BookingFormDialog>
                               value: _selectedTimeSlot,
                               items: _availableTimeSlotsForRoom,
                               getLabel: (timeSlot) => timeSlot.displayTime,
-                              hint: 'Select time slot',
+                              hint: _selectedRoom == null
+                                  ? 'Select a room first'
+                                  : _availableTimeSlotsForRoom.isEmpty
+                                  ? 'No time slots available'
+                                  : 'Select time slot',
                               onChanged: (TimeSlot? newValue) {
                                 setState(() {
                                   _selectedTimeSlot = newValue;
