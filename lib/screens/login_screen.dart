@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
-import 'forgotpassword_screen.dart';
 import '../component/input_field.dart';
 import '../component/auth_button.dart';
 import '../component/custom_notification.dart';
